@@ -9,6 +9,7 @@ target_sources(cpphl_smoke_tests
 target_link_libraries(cpphl_smoke_tests
   PRIVATE
     cpphl::math
+    cpphl::quantities
     GTest::gtest_main
 )
 
@@ -26,6 +27,7 @@ target_sources(cpphl_smoke_shared_tests
 target_link_libraries(cpphl_smoke_shared_tests
   PRIVATE
     cpphl::math_shared
+    cpphl::quantities_shared
     GTest::gtest_main
 )
 
