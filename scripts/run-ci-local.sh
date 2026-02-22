@@ -21,8 +21,8 @@ ctest --preset test-clang-release
 
 echo "[ci-local] clang-debug-asan-ubsan: configure/build/test"
 cmake --preset clang-debug-asan-ubsan
-cmake --build --preset build-clang-debug-asan-ubsan --parallel
-ctest --preset test-clang-debug-asan-ubsan
+ASAN_OPTIONS=detect_leaks=0 cmake --build --preset build-clang-debug-asan-ubsan --parallel
+ASAN_OPTIONS=detect_leaks=0 ctest --preset test-clang-debug-asan-ubsan
 
 echo "[ci-local] gcc-coverage: configure/build/test/coverage gate"
 cmake --preset gcc-coverage

@@ -16,6 +16,7 @@ function(cpphl_apply_static_analysis target_name)
       "--std=c++20"
       "--error-exitcode=2"
       "--inline-suppr"
+      "--library=googletest"
       "--suppress=missingIncludeSystem"
     )
     set_property(TARGET "${target_name}" PROPERTY CXX_CPPCHECK "${cppcheck_command}")
