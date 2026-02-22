@@ -168,6 +168,8 @@ cmake --workflow --preset ci-local
 - `docs/build-and-test.md`
 - `docs/architecture.md`
 - `docs/contributing.md`
+- `docs/linear-algebra.md`
+- `docs/quantities.md`
 - `docs/spherical-geometry.md`
 - `docs/style-guide.md`
 

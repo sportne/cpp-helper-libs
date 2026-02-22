@@ -103,8 +103,10 @@ public:
   static Time from_raw(double raw) noexcept;
 
 private:
+  /// Construct directly from canonical raw seconds.
   explicit constexpr Time(double raw) noexcept : QuantityBase(raw) {}
 
+  /// Convert from a user-facing unit into canonical raw seconds.
   static double to_raw(double value, Unit unit);
 };
 

@@ -76,8 +76,10 @@ public:
   static Force from_raw(double raw) noexcept;
 
 private:
+  /// Construct directly from canonical raw newtons.
   explicit constexpr Force(double raw) noexcept : QuantityBase(raw) {}
 
+  /// Convert from a user-facing unit into canonical raw newtons.
   static double to_raw(double value, Unit unit);
 };
 

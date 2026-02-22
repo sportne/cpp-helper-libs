@@ -121,8 +121,10 @@ public:
   static Length from_raw(double raw) noexcept;
 
 private:
+  /// Construct directly from canonical raw meters.
   explicit constexpr Length(double raw) noexcept : QuantityBase(raw) {}
 
+  /// Convert from a user-facing unit into canonical raw meters.
   static double to_raw(double value, Unit unit);
 };
 

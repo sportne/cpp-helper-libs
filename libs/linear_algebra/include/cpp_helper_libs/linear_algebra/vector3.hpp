@@ -167,8 +167,11 @@ public:
   central_angle(const Vector3 &other) const noexcept;
 
 private:
+  /// X component in Cartesian coordinates.
   const double x_;
+  /// Y component in Cartesian coordinates.
   const double y_;
+  /// Z component in Cartesian coordinates.
   const double z_;
 };
 

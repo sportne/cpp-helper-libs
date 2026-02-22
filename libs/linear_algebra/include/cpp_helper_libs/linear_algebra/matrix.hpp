@@ -142,8 +142,11 @@ private:
   Matrix(std::size_t row_count, std::size_t column_count, std::vector<double> values) noexcept
       : row_count_(row_count), column_count_(column_count), values_(std::move(values)) {}
 
+  /// Number of matrix rows.
   std::size_t row_count_;
+  /// Number of matrix columns.
   std::size_t column_count_;
+  /// Flat row-major storage of matrix entries.
   std::vector<double> values_;
 };
 

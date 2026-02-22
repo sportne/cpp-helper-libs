@@ -103,8 +103,10 @@ public:
   static Mass from_raw(double raw) noexcept;
 
 private:
+  /// Construct directly from canonical raw kilograms.
   explicit constexpr Mass(double raw) noexcept : QuantityBase(raw) {}
 
+  /// Convert from a user-facing unit into canonical raw kilograms.
   static double to_raw(double value, Unit unit);
 };
 
