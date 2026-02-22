@@ -5,7 +5,13 @@ include(GoogleTest)
 add_executable(cpphl_quantities_tests)
 target_sources(cpphl_quantities_tests
   PRIVATE
-    quantities_test.cpp
+    acceleration_test.cpp
+    angle_test.cpp
+    force_test.cpp
+    length_test.cpp
+    mass_test.cpp
+    speed_test.cpp
+    time_test.cpp
 )
 
 # Link module under test plus gtest main().
