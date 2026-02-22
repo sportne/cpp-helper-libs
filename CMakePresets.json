@@ -1,0 +1,76 @@
+{
+  "version": 5,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 25,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "clang-debug",
+      "displayName": "Clang Debug",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/clang-debug",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "clang",
+        "CMAKE_CXX_COMPILER": "clang++",
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CPPHL_BUILD_TESTS": "ON",
+        "CPPHL_ENABLE_WARNINGS": "ON",
+        "CPPHL_ENABLE_SANITIZERS": "OFF"
+      }
+    },
+    {
+      "name": "clang-debug-asan-ubsan",
+      "displayName": "Clang Debug + ASan/UBSan",
+      "inherits": "clang-debug",
+      "cacheVariables": {
+        "CPPHL_ENABLE_SANITIZERS": "ON"
+      }
+    },
+    {
+      "name": "clang-release",
+      "displayName": "Clang Release",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/clang-release",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "clang",
+        "CMAKE_CXX_COMPILER": "clang++",
+        "CMAKE_BUILD_TYPE": "Release",
+        "CPPHL_BUILD_TESTS": "ON",
+        "CPPHL_ENABLE_WARNINGS": "ON",
+        "CPPHL_ENABLE_SANITIZERS": "OFF"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "build-clang-debug",
+      "configurePreset": "clang-debug"
+    },
+    {
+      "name": "build-clang-debug-asan-ubsan",
+      "configurePreset": "clang-debug-asan-ubsan"
+    },
+    {
+      "name": "build-clang-release",
+      "configurePreset": "clang-release"
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "test-clang-debug",
+      "configurePreset": "clang-debug",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "test-clang-debug-asan-ubsan",
+      "configurePreset": "clang-debug-asan-ubsan",
+      "output": {
+        "outputOnFailure": true
+      }
+    }
+  ]
+}
