@@ -1,3 +1,6 @@
+// Copyright (c) 2026 sportne
+// SPDX-License-Identifier: MIT
+
 #ifndef CPP_HELPER_LIBS_QUANTITIES_ANGLE_HPP
 #define CPP_HELPER_LIBS_QUANTITIES_ANGLE_HPP
 
@@ -8,26 +11,73 @@
 
 namespace cpp_helper_libs::quantities {
 
+/**
+ * @brief Angular quantity stored canonically in radians.
+ */
 class Angle final : public QuantityBase<Angle> {
 public:
+  /**
+   * @brief Supported angle units for construction and conversion.
+   */
   enum class Unit {
     Radian,
     Degree,
   };
 
+  /**
+   * @brief Construct an angle from a value and unit.
+   *
+   * @param value Numeric magnitude in @p unit.
+   * @param unit Unit associated with @p value.
+   * @throws std::invalid_argument When @p unit is not a valid enum value.
+   */
   explicit Angle(double value, Unit unit);
 
+  /**
+   * @brief Create an angle in radians.
+   *
+   * @param value Magnitude in radians.
+   * @return Angle value.
+   */
   static Angle radians(double value);
+
+  /**
+   * @brief Create an angle in degrees.
+   *
+   * @param value Magnitude in degrees.
+   * @return Angle value.
+   */
   static Angle degrees(double value);
 
-  // Return an equivalent angle normalized to the range [0, 2*pi).
+  /**
+   * @brief Normalize to the range [0, 2*pi).
+   *
+   * @return Equivalent wrapped angle in [0, 2*pi).
+   */
   Angle bound_zero_to_two_pi() const noexcept;
 
-  // Return an equivalent angle normalized to the range [-pi, pi).
+  /**
+   * @brief Normalize to the range [-pi, pi).
+   *
+   * @return Equivalent wrapped angle in [-pi, pi).
+   */
   Angle bound_negative_pi_to_pi() const noexcept;
 
+  /**
+   * @brief Convert this angle into another unit.
+   *
+   * @param unit Target angle unit.
+   * @return Magnitude expressed in @p unit.
+   * @throws std::invalid_argument When @p unit is not a valid enum value.
+   */
   double in(Unit unit) const;
 
+  /**
+   * @brief Construct an angle directly from canonical raw radians.
+   *
+   * @param raw Canonical value in radians.
+   * @return Angle value with canonical storage set to @p raw.
+   */
   static Angle from_raw(double raw) noexcept;
 
 private:

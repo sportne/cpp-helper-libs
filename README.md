@@ -5,6 +5,8 @@ Modular C++ helper libraries built with CMake presets and target-based project c
 The repository currently contains first-party modules:
 - `libs/math`: arithmetic helpers (`add`, `sub`)
 - `libs/quantities`: strongly-typed measurable quantities with unit conversions
+- `libs/linear_algebra`: immutable vector and matrix helpers (`Vector3`, `UnitVector3`, `Matrix3`,
+  `Matrix`)
 
 Each module is built as both:
 - static library target: `cpphl_<module>` (alias: `cpphl::<module>`)
@@ -33,6 +35,7 @@ make debug
 ## Public API Example
 
 ```cpp
+#include "cpp_helper_libs/linear_algebra/linear_algebra.hpp"
 #include "cpp_helper_libs/math/arithmetic.hpp"
 #include "cpp_helper_libs/quantities/quantities.hpp"
 
@@ -41,6 +44,17 @@ const int diff = cpp_helper_libs::math::sub(7, 4); // 3
 
 const auto one_mile = cpp_helper_libs::quantities::Length::miles(1.0);
 const auto meters = one_mile.in(cpp_helper_libs::quantities::Length::Unit::Meter); // 1609.344
+
+const auto normal = cpp_helper_libs::linear_algebra::unit_normal(
+    cpp_helper_libs::linear_algebra::Vector3(1.0, 0.0, 0.0),
+    cpp_helper_libs::linear_algebra::Vector3(0.0, 1.0, 0.0));
+// normal has value (0, 0, 1)
+
+const cpp_helper_libs::linear_algebra::Matrix3 a(4.0, 1.0, 2.0,
+                                                  1.0, 5.0, 1.0,
+                                                  2.0, 1.0, 3.0);
+const auto x = a.solve(cpp_helper_libs::linear_algebra::Vector3(7.0, 8.0, 5.0));
+const double det = a.determinant(); // 37.0
 ```
 
 ## Repository Layout
@@ -51,6 +65,7 @@ const auto meters = one_mile.in(cpp_helper_libs::quantities::Length::Unit::Meter
 ├── docs/                  # Contributor and workflow documentation
 ├── libs/                  # First-party helper library modules
 │   └── math/
+│   └── linear_algebra/
 │   └── quantities/
 ├── tests/                 # Cross-module smoke/integration tests
 └── third_party/           # Vendored dependencies (GoogleTest submodule)

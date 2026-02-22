@@ -35,10 +35,17 @@ endif()
 
 string(REPLACE "\n" ";" tracked_files "${tracked_files_raw}")
 set(cpp_files)
+set(skipped_missing_files 0)
 foreach(rel_path IN LISTS tracked_files)
   # Restrict formatting to C/C++ source/header extensions.
   if(rel_path MATCHES "\\.(h|hh|hpp|c|cc|cpp|cxx)$")
-    list(APPEND cpp_files "${REPO_ROOT}/${rel_path}")
+    set(abs_path "${REPO_ROOT}/${rel_path}")
+    # Handle tracked files that are deleted locally but not yet staged via `git rm`.
+    if(EXISTS "${abs_path}")
+      list(APPEND cpp_files "${abs_path}")
+    else()
+      math(EXPR skipped_missing_files "${skipped_missing_files} + 1")
+    endif()
   endif()
 endforeach()
 
@@ -71,7 +78,8 @@ endforeach()
 
 list(LENGTH cpp_files file_count)
 if(MODE STREQUAL "format")
-  message(STATUS "Formatted ${file_count} C/C++ files.")
+  message(STATUS "Formatted ${file_count} C/C++ files (skipped ${skipped_missing_files} missing).")
 else()
-  message(STATUS "Formatting check passed for ${file_count} C/C++ files.")
+  message(STATUS
+          "Formatting check passed for ${file_count} C/C++ files (skipped ${skipped_missing_files} missing).")
 endif()

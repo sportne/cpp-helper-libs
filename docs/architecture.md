@@ -46,3 +46,6 @@ libs/<module>/
 
 - `math`: simple integer arithmetic helpers (`add`, `sub`)
 - `quantities`: strongly-typed measurable quantities with unit-safe conversions and comparisons
+- `linear_algebra`: immutable 3D vectors and matrix math (`Matrix3` plus a basic dynamic `Matrix`).
+  Advanced routines (SVD/eigendecomposition/pseudoinverse/reshape-slicing) are intentionally
+  deferred to a later phase.
