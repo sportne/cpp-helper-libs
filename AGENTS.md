@@ -9,6 +9,8 @@ This file defines repository-wide expectations for AI coding agents and automati
 - Prefer adding new functionality as isolated modules under `libs/<module>`.
 - Require tests for behavior changes and new public APIs.
 - Update documentation in `docs/` when modules, APIs, or workflows change.
+- Write docs/comments so a first-time high-school-senior-level contributor can follow the design.
+- Document non-obvious constants (meaning, units, thresholds) and private fields on public API types.
 - Avoid broad refactors unless explicitly requested.
 - Keep CMake target-based (`target_*`) and avoid global compile flag mutations when possible.
 - Keep local validation aligned with CI gates: format, static analysis, test matrix, and coverage threshold.

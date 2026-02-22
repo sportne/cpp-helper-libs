@@ -37,3 +37,13 @@
 
 - Update `README.md` and relevant files in `docs/` whenever APIs, modules, or workflows change.
 - Keep examples and commands aligned with `CMakePresets.json` and `Makefile`.
+- Write documentation for a "new high school senior contributor" audience:
+  - define domain terms before using them repeatedly
+  - explain geometric/algorithmic intent, not only mechanics
+  - include at least one concrete usage example for new modules
+- In public headers, document:
+  - class purpose and invariants
+  - parameter meaning and units
+  - tolerant vs exact behavior where both exist
+- Comment all non-obvious constants with what they represent physically or mathematically.
+- Comment private fields in public API types so readers understand what data each field stores.
