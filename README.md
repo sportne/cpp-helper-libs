@@ -5,6 +5,7 @@ Modular C++ helper libraries built with CMake presets and target-based project c
 The repository currently contains first-party modules:
 - `libs/math`: arithmetic helpers (`add`, `sub`)
 - `libs/quantities`: strongly-typed measurable quantities with unit conversions
+- `libs/linear_algebra`: immutable 3D vector types (`Vector3`, `UnitVector3`) and vector math
 
 Each module is built as both:
 - static library target: `cpphl_<module>` (alias: `cpphl::<module>`)
@@ -33,6 +34,7 @@ make debug
 ## Public API Example
 
 ```cpp
+#include "cpp_helper_libs/linear_algebra/linear_algebra.hpp"
 #include "cpp_helper_libs/math/arithmetic.hpp"
 #include "cpp_helper_libs/quantities/quantities.hpp"
 
@@ -41,6 +43,11 @@ const int diff = cpp_helper_libs::math::sub(7, 4); // 3
 
 const auto one_mile = cpp_helper_libs::quantities::Length::miles(1.0);
 const auto meters = one_mile.in(cpp_helper_libs::quantities::Length::Unit::Meter); // 1609.344
+
+const auto normal = cpp_helper_libs::linear_algebra::unit_normal(
+    cpp_helper_libs::linear_algebra::Vector3(1.0, 0.0, 0.0),
+    cpp_helper_libs::linear_algebra::Vector3(0.0, 1.0, 0.0));
+// normal has value (0, 0, 1)
 ```
 
 ## Repository Layout
@@ -51,6 +58,7 @@ const auto meters = one_mile.in(cpp_helper_libs::quantities::Length::Unit::Meter
 ├── docs/                  # Contributor and workflow documentation
 ├── libs/                  # First-party helper library modules
 │   └── math/
+│   └── linear_algebra/
 │   └── quantities/
 ├── tests/                 # Cross-module smoke/integration tests
 └── third_party/           # Vendored dependencies (GoogleTest submodule)

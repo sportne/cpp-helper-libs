@@ -46,3 +46,5 @@ libs/<module>/
 
 - `math`: simple integer arithmetic helpers (`add`, `sub`)
 - `quantities`: strongly-typed measurable quantities with unit-safe conversions and comparisons
+- `linear_algebra`: immutable 3D vector types and vector operations; module name intentionally
+  reserves room for future matrix APIs
