@@ -42,21 +42,29 @@ if(CPPHL_BUILD_TESTS)
 endif()
 
 add_custom_target(format
-  COMMAND "${CMAKE_SOURCE_DIR}/scripts/format-cpp.sh"
+  COMMAND "${CMAKE_COMMAND}"
+          -DREPO_ROOT=${CMAKE_SOURCE_DIR}
+          -DMODE=format
+          -P "${CMAKE_SOURCE_DIR}/cmake/RunFormat.cmake"
   WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
   COMMENT "Formatting C/C++ sources under libs/ and tests/"
   VERBATIM
 )
 
 add_custom_target(format-check
-  COMMAND "${CMAKE_SOURCE_DIR}/scripts/check-format-cpp.sh"
+  COMMAND "${CMAKE_COMMAND}"
+          -DREPO_ROOT=${CMAKE_SOURCE_DIR}
+          -DMODE=check
+          -P "${CMAKE_SOURCE_DIR}/cmake/RunFormat.cmake"
   WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
   COMMENT "Checking C/C++ formatting under libs/ and tests/"
   VERBATIM
 )
 
 add_custom_target(ci-local
-  COMMAND "${CMAKE_SOURCE_DIR}/scripts/run-ci-local.sh"
+  COMMAND "${CMAKE_COMMAND}"
+          -DREPO_ROOT=${CMAKE_SOURCE_DIR}
+          -P "${CMAKE_SOURCE_DIR}/cmake/RunCiLocal.cmake"
   WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
   COMMENT "Running local CI-equivalent checks"
   VERBATIM

@@ -31,7 +31,7 @@ jobs:
           sudo apt-get install -y clang-format
 
       - name: Verify formatting
-        run: ./scripts/check-format-cpp.sh
+        run: cmake -DREPO_ROOT="${{ github.workspace }}" -DMODE=check -P cmake/RunFormat.cmake
 
   static-analysis:
     name: Static Analysis

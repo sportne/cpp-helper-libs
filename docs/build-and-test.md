@@ -27,14 +27,14 @@ ctest --preset test-clang-debug
 ## One-Command Local CI
 
 ```bash
-./scripts/run-ci-local.sh
-```
-
-Alternative via CMake:
-
-```bash
 cmake --preset clang-debug
 cmake --build --preset build-clang-debug --target ci-local
+```
+
+Optional shell wrapper (Unix-like environments):
+
+```bash
+./scripts/run-ci-local.sh
 ```
 
 ## Optional Sanitizers
