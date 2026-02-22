@@ -17,7 +17,10 @@
         "CMAKE_BUILD_TYPE": "Debug",
         "CPPHL_BUILD_TESTS": "ON",
         "CPPHL_ENABLE_WARNINGS": "ON",
-        "CPPHL_ENABLE_SANITIZERS": "OFF"
+        "CPPHL_ENABLE_SANITIZERS": "OFF",
+        "CPPHL_ENABLE_COVERAGE": "OFF",
+        "CPPHL_ENABLE_CLANG_TIDY": "OFF",
+        "CPPHL_ENABLE_CPPCHECK": "OFF"
       }
     },
     {
@@ -39,7 +42,38 @@
         "CMAKE_BUILD_TYPE": "Release",
         "CPPHL_BUILD_TESTS": "ON",
         "CPPHL_ENABLE_WARNINGS": "ON",
-        "CPPHL_ENABLE_SANITIZERS": "OFF"
+        "CPPHL_ENABLE_SANITIZERS": "OFF",
+        "CPPHL_ENABLE_COVERAGE": "OFF",
+        "CPPHL_ENABLE_CLANG_TIDY": "OFF",
+        "CPPHL_ENABLE_CPPCHECK": "OFF"
+      }
+    },
+    {
+      "name": "gcc-coverage",
+      "displayName": "GCC Debug Coverage",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/gcc-coverage",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "gcc",
+        "CMAKE_CXX_COMPILER": "g++",
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CPPHL_BUILD_TESTS": "ON",
+        "CPPHL_ENABLE_WARNINGS": "ON",
+        "CPPHL_ENABLE_SANITIZERS": "OFF",
+        "CPPHL_ENABLE_COVERAGE": "ON",
+        "CPPHL_ENABLE_CLANG_TIDY": "OFF",
+        "CPPHL_ENABLE_CPPCHECK": "OFF"
+      }
+    },
+    {
+      "name": "clang-static-analysis",
+      "displayName": "Clang Debug + Static Analysis",
+      "inherits": "clang-debug",
+      "binaryDir": "${sourceDir}/build/clang-static-analysis",
+      "cacheVariables": {
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+        "CPPHL_ENABLE_CLANG_TIDY": "ON",
+        "CPPHL_ENABLE_CPPCHECK": "ON"
       }
     }
   ],
@@ -55,6 +89,14 @@
     {
       "name": "build-clang-release",
       "configurePreset": "clang-release"
+    },
+    {
+      "name": "build-gcc-coverage",
+      "configurePreset": "gcc-coverage"
+    },
+    {
+      "name": "build-clang-static-analysis",
+      "configurePreset": "clang-static-analysis"
     }
   ],
   "testPresets": [
@@ -68,6 +110,20 @@
     {
       "name": "test-clang-debug-asan-ubsan",
       "configurePreset": "clang-debug-asan-ubsan",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "test-clang-release",
+      "configurePreset": "clang-release",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "test-gcc-coverage",
+      "configurePreset": "gcc-coverage",
       "output": {
         "outputOnFailure": true
       }

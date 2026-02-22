@@ -17,7 +17,10 @@ target_link_libraries(cpphl_math
     cpphl_project_options
     cpphl_warnings
     cpphl_sanitizers
+    cpphl_coverage
 )
+
+cpphl_apply_static_analysis(cpphl_math)
 
 if(CPPHL_BUILD_TESTS)
   add_subdirectory(tests)

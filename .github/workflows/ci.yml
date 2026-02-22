@@ -1,0 +1,137 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  format-check:
+    name: Format Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install tooling
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang-format
+
+      - name: Verify formatting
+        run: ./scripts/check-format-cpp.sh
+
+  static-analysis:
+    name: Static Analysis
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install tooling
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang clang-tidy cppcheck ninja-build
+
+      - name: Configure
+        run: cmake --preset clang-static-analysis
+
+      - name: Build
+        run: cmake --build --preset build-clang-static-analysis --parallel
+
+  build-and-test:
+    name: Build/Test (${{ matrix.name }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: clang-debug
+            configure_preset: clang-debug
+            build_preset: build-clang-debug
+            test_preset: test-clang-debug
+          - name: clang-release
+            configure_preset: clang-release
+            build_preset: build-clang-release
+            test_preset: test-clang-release
+          - name: clang-debug-asan-ubsan
+            configure_preset: clang-debug-asan-ubsan
+            build_preset: build-clang-debug-asan-ubsan
+            test_preset: test-clang-debug-asan-ubsan
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install tooling
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang ninja-build
+
+      - name: Configure
+        run: cmake --preset ${{ matrix.configure_preset }}
+
+      - name: Build
+        run: cmake --build --preset ${{ matrix.build_preset }} --parallel
+
+      - name: Test
+        run: ctest --preset ${{ matrix.test_preset }}
+
+  coverage:
+    name: Coverage
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install tooling
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc g++ gcovr ninja-build
+
+      - name: Configure
+        run: cmake --preset gcc-coverage
+
+      - name: Build
+        run: cmake --build --preset build-gcc-coverage --parallel
+
+      - name: Test
+        run: ctest --preset test-gcc-coverage
+
+      - name: Collect and enforce coverage
+        run: |
+          gcovr \
+            --root . \
+            --filter '^libs/' \
+            --exclude '^third_party/' \
+            --exclude '.*/tests/.*' \
+            --fail-under-line 80 \
+            --txt \
+            --xml-pretty \
+            --xml coverage.xml
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-xml
+          path: coverage.xml

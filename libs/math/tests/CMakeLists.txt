@@ -12,4 +12,6 @@ target_link_libraries(cpphl_math_tests
     GTest::gtest_main
 )
 
+cpphl_apply_static_analysis(cpphl_math_tests)
+
 gtest_discover_tests(cpphl_math_tests)

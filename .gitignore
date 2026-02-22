@@ -49,6 +49,9 @@ cmake_install.cmake
 CTestTestfile.cmake
 compile_commands.json
 Testing/
+coverage.xml
+coverage*.txt
+coverage/
 
 # IDE and tooling
 .vscode/

@@ -18,8 +18,11 @@ A modular C++ helper library workspace for small reusable components (math, geom
 ## Prerequisites
 - CMake 3.25+
 - Clang/Clang++
+- GCC/G++
 - Ninja (optional, but used by presets)
 - Git (for submodules)
+- clang-format, clang-tidy, cppcheck
+- gcovr (for coverage report generation)
 
 ## Quick Start
 
@@ -45,6 +48,51 @@ cmake --build --preset build-clang-debug
 
 ```bash
 ctest --preset test-clang-debug
+```
+
+## Quality Gates
+
+CI enforces the following checks on pull requests and `main` pushes:
+- Formatting check with `clang-format`.
+- Static analysis with `clang-tidy` and `cppcheck`.
+- Build and test matrix (`clang-debug`, `clang-release`, `clang-debug-asan-ubsan`).
+- Coverage gate: minimum `80%` line coverage over first-party library code under `libs/` (tests excluded).
+
+### One-Command Local CI
+
+```bash
+./scripts/run-ci-local.sh
+```
+
+Alternative via CMake:
+
+```bash
+cmake --preset clang-debug
+cmake --build --preset build-clang-debug --target ci-local
+```
+
+### Local Formatting
+
+```bash
+cmake --preset clang-debug
+cmake --build --preset build-clang-debug --target format-check
+cmake --build --preset build-clang-debug --target format
+```
+
+### Local Static Analysis
+
+```bash
+cmake --preset clang-static-analysis
+cmake --build --preset build-clang-static-analysis
+```
+
+### Local Coverage
+
+```bash
+cmake --preset gcc-coverage
+cmake --build --preset build-gcc-coverage
+ctest --preset test-gcc-coverage
+gcovr --root . --filter '^libs/' --exclude '^third_party/' --exclude '.*/tests/.*' --fail-under-line 80 --txt --xml-pretty --xml coverage.xml
 ```
 
 ## Adding a New Module
