@@ -57,18 +57,55 @@ CI enforces the following checks on pull requests and `main` pushes:
 - Static analysis with `clang-tidy` and `cppcheck`.
 - Build and test matrix (`clang-debug`, `clang-release`, `clang-debug-asan-ubsan`).
 - Coverage gate: minimum `80%` line coverage over first-party library code under `libs/` (tests excluded).
+- Warning policy: compiler warnings are treated as errors on first-party targets (`CPPHL_WARNINGS_AS_ERRORS=ON` in presets).
+
+## Simple Commands
+
+You can use either CMake workflow presets or the top-level `Makefile` aliases:
+
+- Debug build/test:
+  - `cmake --workflow --preset debug`
+  - `make debug`
+- Release build/test:
+  - `cmake --workflow --preset release`
+  - `make release`
+- ASan/UBSan build/test:
+  - `cmake --workflow --preset asan`
+  - `make asan`
+- Static analysis:
+  - `cmake --workflow --preset static-analysis`
+  - `make static-analysis`
+- Format check / apply:
+  - `cmake --workflow --preset format-check` / `cmake --workflow --preset format`
+  - `make format-check` / `make format`
+- Clean:
+  - `make clean` (debug tree)
+  - `make clean-all` (all preset trees)
+  - `make distclean` (remove build dirs and coverage.xml)
+
+## Compiler Policy
+
+- C++ standard: C++20 (`cpphl_project_options`).
+- Warning baseline:
+  - Clang/GCC: `-Wall -Wextra -Wpedantic -Wshadow -Wnon-virtual-dtor -Wold-style-cast -Wcast-align -Wunused -Woverloaded-virtual -Wconversion -Wsign-conversion -Wnull-dereference`.
+  - MSVC: `/W4 /permissive- /w14062` and `/RTCcsu` for Debug only.
+- Warnings as errors:
+  - Enabled by default with `CPPHL_WARNINGS_AS_ERRORS=ON`.
+  - To relax locally: `cmake --preset clang-debug -DCPPHL_WARNINGS_AS_ERRORS=OFF`.
+- Fortify:
+  - `_FORTIFY_SOURCE=2` is enabled for `Release`, `RelWithDebInfo`, and `MinSizeRel` on GNU/Clang.
+  - Debug configurations intentionally do not set `_FORTIFY_SOURCE`.
 
 ### One-Command Local CI
 
 ```bash
-cmake --preset clang-debug
-cmake --build --preset build-clang-debug --target ci-local
+cmake --workflow --preset ci-local
 ```
 
-Optional shell wrapper (Unix-like environments):
+Equivalent alias:
 
 ```bash
-./scripts/run-ci-local.sh
+make ci
 ```
 
 ### Local Formatting

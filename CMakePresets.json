@@ -1,5 +1,5 @@
 {
-  "version": 5,
+  "version": 6,
   "cmakeMinimumRequired": {
     "major": 3,
     "minor": 25,
@@ -9,6 +9,7 @@
     {
       "name": "clang-debug",
       "displayName": "Clang Debug",
+      "description": "Clang Debug configuration for local development, warnings, and unit tests.",
       "generator": "Ninja",
       "binaryDir": "${sourceDir}/build/clang-debug",
       "cacheVariables": {
@@ -17,6 +18,7 @@
         "CMAKE_BUILD_TYPE": "Debug",
         "CPPHL_BUILD_TESTS": "ON",
         "CPPHL_ENABLE_WARNINGS": "ON",
+        "CPPHL_WARNINGS_AS_ERRORS": "ON",
         "CPPHL_ENABLE_SANITIZERS": "OFF",
         "CPPHL_ENABLE_COVERAGE": "OFF",
         "CPPHL_ENABLE_CLANG_TIDY": "OFF",
@@ -26,6 +28,7 @@
     {
       "name": "clang-debug-asan-ubsan",
       "displayName": "Clang Debug + ASan/UBSan",
+      "description": "Clang Debug configuration with AddressSanitizer and UndefinedBehaviorSanitizer enabled.",
       "inherits": "clang-debug",
       "cacheVariables": {
         "CPPHL_ENABLE_SANITIZERS": "ON"
@@ -34,6 +37,7 @@
     {
       "name": "clang-release",
       "displayName": "Clang Release",
+      "description": "Clang Release configuration for optimized production-like builds and tests.",
       "generator": "Ninja",
       "binaryDir": "${sourceDir}/build/clang-release",
       "cacheVariables": {
@@ -42,6 +46,7 @@
         "CMAKE_BUILD_TYPE": "Release",
         "CPPHL_BUILD_TESTS": "ON",
         "CPPHL_ENABLE_WARNINGS": "ON",
+        "CPPHL_WARNINGS_AS_ERRORS": "ON",
         "CPPHL_ENABLE_SANITIZERS": "OFF",
         "CPPHL_ENABLE_COVERAGE": "OFF",
         "CPPHL_ENABLE_CLANG_TIDY": "OFF",
@@ -51,6 +56,7 @@
     {
       "name": "gcc-coverage",
       "displayName": "GCC Debug Coverage",
+      "description": "GCC Debug configuration with gcov-compatible coverage instrumentation enabled.",
       "generator": "Ninja",
       "binaryDir": "${sourceDir}/build/gcc-coverage",
       "cacheVariables": {
@@ -59,6 +65,7 @@
         "CMAKE_BUILD_TYPE": "Debug",
         "CPPHL_BUILD_TESTS": "ON",
         "CPPHL_ENABLE_WARNINGS": "ON",
+        "CPPHL_WARNINGS_AS_ERRORS": "ON",
         "CPPHL_ENABLE_SANITIZERS": "OFF",
         "CPPHL_ENABLE_COVERAGE": "ON",
         "CPPHL_ENABLE_CLANG_TIDY": "OFF",
@@ -68,6 +75,7 @@
     {
       "name": "clang-static-analysis",
       "displayName": "Clang Debug + Static Analysis",
+      "description": "Clang Debug configuration with clang-tidy and cppcheck enabled.",
       "inherits": "clang-debug",
       "binaryDir": "${sourceDir}/build/clang-static-analysis",
       "cacheVariables": {
@@ -80,28 +88,58 @@
   "buildPresets": [
     {
       "name": "build-clang-debug",
+      "description": "Build all targets for the clang-debug configure preset.",
       "configurePreset": "clang-debug"
     },
     {
       "name": "build-clang-debug-asan-ubsan",
+      "description": "Build all targets for the sanitizer-enabled debug preset.",
       "configurePreset": "clang-debug-asan-ubsan"
     },
     {
       "name": "build-clang-release",
+      "description": "Build all targets for the clang-release configure preset.",
       "configurePreset": "clang-release"
     },
     {
       "name": "build-gcc-coverage",
+      "description": "Build all targets for the GCC coverage configure preset.",
       "configurePreset": "gcc-coverage"
     },
     {
       "name": "build-clang-static-analysis",
+      "description": "Build first-party targets with static analysis tools active.",
       "configurePreset": "clang-static-analysis"
+    },
+    {
+      "name": "build-clang-debug-format-check",
+      "description": "Build only the format-check target in the clang-debug build tree.",
+      "configurePreset": "clang-debug",
+      "targets": [
+        "format-check"
+      ]
+    },
+    {
+      "name": "build-clang-debug-format",
+      "description": "Build only the format target in the clang-debug build tree.",
+      "configurePreset": "clang-debug",
+      "targets": [
+        "format"
+      ]
+    },
+    {
+      "name": "build-clang-debug-ci-local",
+      "description": "Build only the ci-local target in the clang-debug build tree.",
+      "configurePreset": "clang-debug",
+      "targets": [
+        "ci-local"
+      ]
     }
   ],
   "testPresets": [
     {
       "name": "test-clang-debug",
+      "description": "Run CTest suite for clang-debug with failure output enabled.",
       "configurePreset": "clang-debug",
       "output": {
         "outputOnFailure": true
@@ -109,6 +147,7 @@
     },
     {
       "name": "test-clang-debug-asan-ubsan",
+      "description": "Run CTest suite for sanitizer-enabled debug build.",
       "configurePreset": "clang-debug-asan-ubsan",
       "output": {
         "outputOnFailure": true
@@ -116,6 +155,7 @@
     },
     {
       "name": "test-clang-release",
+      "description": "Run CTest suite for clang-release build.",
       "configurePreset": "clang-release",
       "output": {
         "outputOnFailure": true
@@ -123,10 +163,149 @@
     },
     {
       "name": "test-gcc-coverage",
+      "description": "Run CTest suite for coverage-instrumented GCC build.",
       "configurePreset": "gcc-coverage",
       "output": {
         "outputOnFailure": true
       }
+    }
+  ],
+  "workflowPresets": [
+    {
+      "name": "debug",
+      "displayName": "Debug Configure/Build/Test",
+      "description": "Configure, build, and test the clang-debug preset end to end.",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "clang-debug"
+        },
+        {
+          "type": "build",
+          "name": "build-clang-debug"
+        },
+        {
+          "type": "test",
+          "name": "test-clang-debug"
+        }
+      ]
+    },
+    {
+      "name": "release",
+      "displayName": "Release Configure/Build/Test",
+      "description": "Configure, build, and test the clang-release preset end to end.",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "clang-release"
+        },
+        {
+          "type": "build",
+          "name": "build-clang-release"
+        },
+        {
+          "type": "test",
+          "name": "test-clang-release"
+        }
+      ]
+    },
+    {
+      "name": "asan",
+      "displayName": "ASan/UBSan Configure/Build/Test",
+      "description": "Configure, build, and test sanitizer-enabled debug preset.",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "clang-debug-asan-ubsan"
+        },
+        {
+          "type": "build",
+          "name": "build-clang-debug-asan-ubsan"
+        },
+        {
+          "type": "test",
+          "name": "test-clang-debug-asan-ubsan"
+        }
+      ]
+    },
+    {
+      "name": "coverage",
+      "displayName": "Coverage Configure/Build/Test",
+      "description": "Configure, build, and test coverage-enabled GCC preset.",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "gcc-coverage"
+        },
+        {
+          "type": "build",
+          "name": "build-gcc-coverage"
+        },
+        {
+          "type": "test",
+          "name": "test-gcc-coverage"
+        }
+      ]
+    },
+    {
+      "name": "static-analysis",
+      "displayName": "Static Analysis Configure/Build",
+      "description": "Configure and build with clang-tidy and cppcheck enabled.",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "clang-static-analysis"
+        },
+        {
+          "type": "build",
+          "name": "build-clang-static-analysis"
+        }
+      ]
+    },
+    {
+      "name": "format-check",
+      "displayName": "Format Check",
+      "description": "Configure debug tree and run format-check target.",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "clang-debug"
+        },
+        {
+          "type": "build",
+          "name": "build-clang-debug-format-check"
+        }
+      ]
+    },
+    {
+      "name": "format",
+      "displayName": "Apply Formatting",
+      "description": "Configure debug tree and run format target.",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "clang-debug"
+        },
+        {
+          "type": "build",
+          "name": "build-clang-debug-format"
+        }
+      ]
+    },
+    {
+      "name": "ci-local",
+      "displayName": "Run Local CI Target",
+      "description": "Configure debug tree and run ci-local target for full local CI parity.",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "clang-debug"
+        },
+        {
+          "type": "build",
+          "name": "build-clang-debug-ci-local"
+        }
+      ]
     }
   ]
 }

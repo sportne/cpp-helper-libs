@@ -1,8 +1,10 @@
 if(NOT DEFINED REPO_ROOT)
+  # Default to repository root (one directory up from this script file).
   get_filename_component(REPO_ROOT "${CMAKE_CURRENT_LIST_DIR}/.." ABSOLUTE)
 endif()
 
 if(NOT DEFINED MODE)
+  # Default mode is format validation.
   set(MODE "check")
 endif()
 
@@ -10,9 +12,11 @@ if(NOT MODE STREQUAL "check" AND NOT MODE STREQUAL "format")
   message(FATAL_ERROR "MODE must be either 'check' or 'format'.")
 endif()
 
+# Resolve required tools up front with clear configure-time failures.
 find_program(GIT_EXECUTABLE NAMES git REQUIRED)
 find_program(CLANG_FORMAT_EXECUTABLE NAMES clang-format REQUIRED)
 
+# Enumerate tracked files only, so generated/untracked files are ignored.
 execute_process(
   COMMAND "${GIT_EXECUTABLE}" -C "${REPO_ROOT}" ls-files libs tests
   OUTPUT_VARIABLE tracked_files_raw
@@ -32,6 +36,7 @@ endif()
 string(REPLACE "\n" ";" tracked_files "${tracked_files_raw}")
 set(cpp_files)
 foreach(rel_path IN LISTS tracked_files)
+  # Restrict formatting to C/C++ source/header extensions.
   if(rel_path MATCHES "\\.(h|hh|hpp|c|cc|cpp|cxx)$")
     list(APPEND cpp_files "${REPO_ROOT}/${rel_path}")
   endif()
@@ -44,6 +49,7 @@ endif()
 
 foreach(file_path IN LISTS cpp_files)
   if(MODE STREQUAL "format")
+    # In-place formatting mode.
     execute_process(
       COMMAND "${CLANG_FORMAT_EXECUTABLE}" -i "${file_path}"
       RESULT_VARIABLE format_result
@@ -52,6 +58,7 @@ foreach(file_path IN LISTS cpp_files)
       message(FATAL_ERROR "clang-format failed for ${file_path}")
     endif()
   else()
+    # Validation mode used by CI/format-check target.
     execute_process(
       COMMAND "${CLANG_FORMAT_EXECUTABLE}" --dry-run --Werror "${file_path}"
       RESULT_VARIABLE check_result
