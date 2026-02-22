@@ -19,27 +19,71 @@ namespace cpp_helper_libs::spherical_geometry {
  */
 class MajorArc final : public SphericalCurve {
 public:
+  /**
+   * @brief Create a major arc from an oriented start ray and angular sweep.
+   *
+   * @param start_ray Oriented start frame; tangent direction sets traversal orientation.
+   * @param sweep Central-angle sweep on the unit sphere.
+   * @return Arc instance when `sweep` is in `[pi, 2*pi)`, otherwise `std::nullopt`.
+   */
   static std::optional<MajorArc>
   from_start_and_sweep(const SphericalRay &start_ray,
                        cpp_helper_libs::quantities::Angle sweep) noexcept;
 
+  /**
+   * @brief Unit radial of the start endpoint.
+   */
   cpp_helper_libs::linear_algebra::UnitVector3 start_radial() const noexcept override;
+  /**
+   * @brief Unit radial of the end endpoint.
+   */
   cpp_helper_libs::linear_algebra::UnitVector3 end_radial() const noexcept override;
 
+  /**
+   * @brief Oriented frame at the start endpoint.
+   */
   SphericalRay start_ray() const noexcept override;
+  /**
+   * @brief Oriented frame at the end endpoint.
+   */
   SphericalRay end_ray() const noexcept override;
 
+  /**
+   * @brief Surface length of the arc as a central angle.
+   */
   cpp_helper_libs::quantities::Angle length() const noexcept override;
 
 protected:
+  /**
+   * @brief Great-circle support axis (`normal` of support plane).
+   */
   cpp_helper_libs::linear_algebra::UnitVector3 support_axis() const noexcept override;
+  /**
+   * @brief Great-circle support constant.
+   *
+   * Major arcs lie on great circles, so this is always `0`.
+   */
   double support_constant() const noexcept override;
+  /**
+   * @brief Signed sweep used for parameterization and intersection internals.
+   */
   double signed_sweep_radians() const noexcept override;
+  /**
+   * @brief Locate a point on this arc and return normalized curve parameter metadata.
+   */
   std::optional<CurveLocation>
   locate_point(const cpp_helper_libs::linear_algebra::UnitVector3 &point,
                bool exact) const noexcept override;
+  /**
+   * @brief Evaluate the arc at normalized parameter `t` in [0, 1].
+   */
   cpp_helper_libs::linear_algebra::UnitVector3
   point_at_parameter(double parameter) const noexcept override;
+  /**
+   * @brief Report whether this curve is degenerate.
+   *
+   * Always `false` for @ref MajorArc.
+   */
   bool is_zero_length_curve() const noexcept override;
 
 private:

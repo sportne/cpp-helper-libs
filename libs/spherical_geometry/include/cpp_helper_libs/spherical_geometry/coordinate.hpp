@@ -19,22 +19,33 @@ class Coordinate final {
 public:
   /**
    * @brief Construct from latitude and longitude angles.
+   *
+   * Inputs are normalized by clamping latitude and wrapping longitude.
    */
   Coordinate(cpp_helper_libs::quantities::Angle latitude,
              cpp_helper_libs::quantities::Angle longitude) noexcept;
 
   /**
    * @brief Construct from degree inputs.
+   *
+   * @param latitude_degrees Latitude in degrees.
+   * @param longitude_degrees Longitude in degrees.
    */
   static Coordinate degrees(double latitude_degrees, double longitude_degrees) noexcept;
 
   /**
    * @brief Construct from radian inputs.
+   *
+   * @param latitude_radians Latitude in radians.
+   * @param longitude_radians Longitude in radians.
    */
   static Coordinate radians(double latitude_radians, double longitude_radians) noexcept;
 
   /**
    * @brief Convert from a unit radial vector.
+   *
+   * @param radial Unit radial on the sphere.
+   * @return Coordinate equivalent to the radial direction.
    */
   static Coordinate
   from_radial(const cpp_helper_libs::linear_algebra::UnitVector3 &radial) noexcept;
@@ -51,6 +62,8 @@ public:
 
   /**
    * @brief Convert to unit radial vector on the unit sphere.
+   *
+   * @return Unit radial corresponding to this coordinate.
    */
   cpp_helper_libs::linear_algebra::UnitVector3 to_radial() const noexcept;
 

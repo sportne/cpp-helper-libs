@@ -51,6 +51,9 @@ struct BoundaryDiscretization final {
   std::size_t segment_count;
 };
 
+// Convert local spherical coordinates (polar angle + azimuth around an axis basis)
+// into a unit radial on the sphere.
+// Assumption: axis/basis_first/basis_second form an orthonormal frame.
 cpp_helper_libs::linear_algebra::UnitVector3
 point_on_basis(const cpp_helper_libs::linear_algebra::UnitVector3 &axis,
                const cpp_helper_libs::linear_algebra::UnitVector3 &basis_first,
@@ -76,6 +79,8 @@ point_on_basis(const cpp_helper_libs::linear_algebra::UnitVector3 &axis,
   return axis;
 }
 
+// Residual function for the ellipse boundary equation:
+// angle(focus_one, point) + angle(focus_two, point) - boundary_sum = 0.
 double boundary_residual(const cpp_helper_libs::linear_algebra::UnitVector3 &focus_one,
                          const cpp_helper_libs::linear_algebra::UnitVector3 &focus_two,
                          const cpp_helper_libs::linear_algebra::UnitVector3 &point,
@@ -84,6 +89,8 @@ double boundary_residual(const cpp_helper_libs::linear_algebra::UnitVector3 &foc
          boundary_sum_radians;
 }
 
+// Solve one boundary root inside a bracket where the residual changes sign.
+// Algorithm: bisection with fixed iteration cap and residual tolerance.
 std::optional<double>
 root_from_sign_change(const cpp_helper_libs::linear_algebra::UnitVector3 &focus_one,
                       const cpp_helper_libs::linear_algebra::UnitVector3 &focus_two,
@@ -134,6 +141,12 @@ root_from_sign_change(const cpp_helper_libs::linear_algebra::UnitVector3 &focus_
   return kHalf * (lower + upper);
 }
 
+// For one azimuth, find the polar angle that satisfies the ellipse boundary equation.
+// Algorithm:
+// 1) Coarse scan for sign changes and near-best residual.
+// 2) Refine sign-change roots using bisection.
+// 3) Prefer root nearest previous angle to preserve boundary continuity.
+// Assumption: neighboring azimuth samples should map to nearby boundary points.
 std::optional<double>
 solve_polar_angle_for_azimuth(const cpp_helper_libs::linear_algebra::UnitVector3 &focus_one,
                               const cpp_helper_libs::linear_algebra::UnitVector3 &focus_two,
@@ -198,6 +211,14 @@ solve_polar_angle_for_azimuth(const cpp_helper_libs::linear_algebra::UnitVector3
   return std::nullopt;
 }
 
+// Build polygonal approximation of ellipse boundary as contiguous minor arcs.
+// Algorithm:
+// 1) Build axis-aligned local basis from the two foci.
+// 2) Sample azimuths uniformly and solve boundary polar angle at each.
+// 3) Connect sampled points with minor arcs.
+// Assumptions:
+// - Segment count is high enough to approximate boundary shape for intersection queries.
+// - Ellipse parameters are valid (checked by caller).
 std::optional<std::vector<MinorArc>>
 build_boundary_edges(const cpp_helper_libs::linear_algebra::UnitVector3 &focus_one,
                      const cpp_helper_libs::linear_algebra::UnitVector3 &focus_two,
@@ -265,6 +286,14 @@ build_boundary_edges(const cpp_helper_libs::linear_algebra::UnitVector3 &focus_o
 
 } // namespace
 
+// Algorithm:
+// - Validate boundary discretization count and boundary sum range.
+// - Reject degenerate ellipse parameter regions using focus distance bounds.
+// - Precompute a piecewise-minor-arc boundary approximation.
+// - Construct the shape from validated parameters and boundary edges.
+// Assumptions:
+// - Focus inputs are unit radials.
+// - Boundary approximation is sufficiently dense for downstream intersection queries.
 std::optional<SphericalEllipse> SphericalEllipse::from_foci_and_boundary_sum(
     const cpp_helper_libs::linear_algebra::UnitVector3 &focus_one,
     const cpp_helper_libs::linear_algebra::UnitVector3 &focus_two,
@@ -299,44 +328,83 @@ std::optional<SphericalEllipse> SphericalEllipse::from_foci_and_boundary_sum(
                           boundary_edges.value());
 }
 
+// Algorithm:
+// - Delegate to shared containment policy helper with inclusive+tolerant settings.
+// Assumptions:
+// - Tolerant mode is the default public behavior for containment.
 bool SphericalEllipse::contains_inclusive(
     const cpp_helper_libs::linear_algebra::UnitVector3 &point) const noexcept {
   return contains_policy(point, true, false);
 }
 
+// Algorithm:
+// - Delegate to shared containment policy helper with exclusive+tolerant settings.
+// Assumptions:
+// - Boundary points are excluded in exclusive mode.
 bool SphericalEllipse::contains_exclusive(
     const cpp_helper_libs::linear_algebra::UnitVector3 &point) const noexcept {
   return contains_policy(point, false, false);
 }
 
+// Algorithm:
+// - Delegate to shared containment policy helper with inclusive+exact settings.
+// Assumptions:
+// - Exact mode performs strict comparisons without tolerance slack.
 bool SphericalEllipse::contains_inclusive_exact(
     const cpp_helper_libs::linear_algebra::UnitVector3 &point) const noexcept {
   return contains_policy(point, true, true);
 }
 
+// Algorithm:
+// - Delegate to shared containment policy helper with exclusive+exact settings.
+// Assumptions:
+// - Exact exclusive mode excludes points exactly on the boundary.
 bool SphericalEllipse::contains_exclusive_exact(
     const cpp_helper_libs::linear_algebra::UnitVector3 &point) const noexcept {
   return contains_policy(point, false, true);
 }
 
+// Algorithm:
+// - Delegate to shared boundary-intersection helper with inclusive+tolerant settings.
+// Assumptions:
+// - Endpoint touches count as intersections in inclusive mode.
 bool SphericalEllipse::boundary_intersects_inclusive(const SphericalCurve &curve) const noexcept {
   return boundary_intersects_policy(curve, true, false);
 }
 
+// Algorithm:
+// - Delegate to shared boundary-intersection helper with exclusive+tolerant settings.
+// Assumptions:
+// - Endpoint-only contacts do not count in exclusive mode.
 bool SphericalEllipse::boundary_intersects_exclusive(const SphericalCurve &curve) const noexcept {
   return boundary_intersects_policy(curve, false, false);
 }
 
+// Algorithm:
+// - Delegate to shared boundary-intersection helper with inclusive+exact settings.
+// Assumptions:
+// - Exact mode uses strict comparisons in underlying curve intersections.
 bool SphericalEllipse::boundary_intersects_inclusive_exact(
     const SphericalCurve &curve) const noexcept {
   return boundary_intersects_policy(curve, true, true);
 }
 
+// Algorithm:
+// - Delegate to shared boundary-intersection helper with exclusive+exact settings.
+// Assumptions:
+// - Endpoint-only contacts do not count in exclusive mode.
 bool SphericalEllipse::boundary_intersects_exclusive_exact(
     const SphericalCurve &curve) const noexcept {
   return boundary_intersects_policy(curve, false, true);
 }
 
+// Algorithm:
+// - Compute candidate sum of central angles to the two foci.
+// - Compare candidate sum against boundary-sum threshold.
+// - Use inclusive/exclusive comparator and optional tolerance slack.
+// Assumptions:
+// - Focus vectors are unit radials.
+// - `boundary_sum_` was validated during construction.
 bool SphericalEllipse::contains_policy(const cpp_helper_libs::linear_algebra::UnitVector3 &point,
                                        const bool inclusive, const bool exact) const noexcept {
   const double boundary_sum_radians =
@@ -352,6 +420,12 @@ bool SphericalEllipse::contains_policy(const cpp_helper_libs::linear_algebra::Un
   return candidate_sum < (boundary_sum_radians - tolerance);
 }
 
+// Algorithm:
+// - Intersect the query curve with each precomputed boundary minor arc.
+// - Inclusive mode returns true on any intersection record.
+// - Exclusive mode requires at least one non-endpoint-touch record.
+// Assumptions:
+// - `boundary_edges_` forms a closed approximation of the ellipse boundary.
 bool SphericalEllipse::boundary_intersects_policy(const SphericalCurve &curve, const bool inclusive,
                                                   const bool exact) const noexcept {
   const auto intersections_for_edge = [&](const MinorArc &edge) {

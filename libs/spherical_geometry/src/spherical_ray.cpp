@@ -21,6 +21,12 @@ std::optional<SphericalRay>
 SphericalRay::from_frame(const cpp_helper_libs::linear_algebra::UnitVector3 &radial,
                          const cpp_helper_libs::linear_algebra::UnitVector3 &normal,
                          const cpp_helper_libs::linear_algebra::UnitVector3 &tangent) noexcept {
+  // Algorithm:
+  // - Validate pairwise orthogonality of the three basis vectors.
+  // - Recompute expected normal as radial x tangent.
+  // - Accept only if recomputed normal agrees with the provided normal (same orientation).
+  // Assumptions:
+  // - Inputs are unit vectors (enforced by type), but may contain floating-point noise.
   if (std::fabs(radial.dot(normal)) > kFrameTolerance) {
     return std::nullopt;
   }
@@ -47,6 +53,12 @@ SphericalRay::from_frame(const cpp_helper_libs::linear_algebra::UnitVector3 &rad
 std::optional<SphericalRay> SphericalRay::from_radial_and_tangent(
     const cpp_helper_libs::linear_algebra::UnitVector3 &radial,
     const cpp_helper_libs::linear_algebra::UnitVector3 &tangent) noexcept {
+  // Algorithm:
+  // - Ensure tangent is orthogonal to radial.
+  // - Compute normal as radial x tangent to complete a right-handed frame.
+  // - Build a ray from the validated frame.
+  // Assumptions:
+  // - Tangent direction encodes forward orientation along the curve.
   if (std::fabs(radial.dot(tangent)) > kFrameTolerance) {
     return std::nullopt;
   }
@@ -62,6 +74,12 @@ std::optional<SphericalRay> SphericalRay::from_radial_and_tangent(
 
 SphericalRay
 SphericalRay::project_forward(const cpp_helper_libs::quantities::Angle arc_length) const noexcept {
+  // Algorithm:
+  // - Rotate both radial and tangent about the fixed normal by arc length.
+  // - Reconstruct a ray from rotated vectors to re-validate frame consistency.
+  // - Fall back to the original ray if reconstruction fails due to numerical issues.
+  // Assumptions:
+  // - Motion along a great-circle direction is modeled by rotation around `normal_`.
   const double radians = arc_length.in(cpp_helper_libs::quantities::Angle::Unit::Radian);
 
   const cpp_helper_libs::linear_algebra::UnitVector3 rotated_radial =
@@ -79,6 +97,11 @@ SphericalRay::project_forward(const cpp_helper_libs::quantities::Angle arc_lengt
 
 SphericalRay SphericalRay::project_forward_exact(
     const cpp_helper_libs::quantities::Angle arc_length) const noexcept {
+  // Algorithm:
+  // - Same as `project_forward`, but use exact-policy axis rotation helper.
+  // Assumptions:
+  // - Exact mode disables tolerance shortcuts but still protects against impossible frame
+  //   reconstruction by returning `*this`.
   const double radians = arc_length.in(cpp_helper_libs::quantities::Angle::Unit::Radian);
 
   const cpp_helper_libs::linear_algebra::UnitVector3 rotated_radial =
@@ -96,6 +119,12 @@ SphericalRay SphericalRay::project_forward_exact(
 
 SphericalRay
 SphericalRay::rotate_about_radial(const cpp_helper_libs::quantities::Angle angle) const noexcept {
+  // Algorithm:
+  // - Keep radial fixed.
+  // - Rotate tangent and normal about radial by the requested roll angle.
+  // - Rebuild a validated frame from the rotated vectors.
+  // Assumptions:
+  // - This operation changes heading/orientation only, not spherical position.
   const double radians = angle.in(cpp_helper_libs::quantities::Angle::Unit::Radian);
 
   const cpp_helper_libs::linear_algebra::UnitVector3 rotated_tangent =
@@ -113,6 +142,10 @@ SphericalRay::rotate_about_radial(const cpp_helper_libs::quantities::Angle angle
 
 SphericalRay SphericalRay::rotate_about_radial_exact(
     const cpp_helper_libs::quantities::Angle angle) const noexcept {
+  // Algorithm:
+  // - Exact-policy counterpart of `rotate_about_radial`.
+  // Assumptions:
+  // - Fallback-to-self behavior matches tolerant mode for API stability.
   const double radians = angle.in(cpp_helper_libs::quantities::Angle::Unit::Radian);
 
   const cpp_helper_libs::linear_algebra::UnitVector3 rotated_tangent =

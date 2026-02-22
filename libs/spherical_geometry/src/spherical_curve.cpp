@@ -22,6 +22,7 @@ struct SupportIntersection final {
   std::vector<cpp_helper_libs::linear_algebra::UnitVector3> points;
 };
 
+// Insert a parameter only if no existing parameter is equivalent within tolerance.
 void add_unique_parameter(std::vector<double> *parameters, const double value,
                           const internal::NumericPolicy &policy) {
   const bool already_present =
@@ -35,12 +36,14 @@ void add_unique_parameter(std::vector<double> *parameters, const double value,
   parameters->push_back(std::clamp(value, 0.0, 1.0));
 }
 
+// Predicate used to check whether a cut/point lies inside an overlap interval.
 bool parameter_within_interval(const double value, const double interval_start,
                                const double interval_end, const internal::NumericPolicy &policy) {
   return value >= (interval_start - policy.parameter_epsilon) &&
          value <= (interval_end + policy.parameter_epsilon);
 }
 
+// Insert a radial candidate only if it is not equivalent to an existing one.
 void add_unique_point(std::vector<cpp_helper_libs::linear_algebra::UnitVector3> *points,
                       const cpp_helper_libs::linear_algebra::UnitVector3 &candidate,
                       const internal::NumericPolicy &policy) {
@@ -55,6 +58,13 @@ void add_unique_point(std::vector<cpp_helper_libs::linear_algebra::UnitVector3> 
   points->push_back(candidate);
 }
 
+// Intersect the two support circles of curves (not yet clipped to curve extents).
+// Algorithm:
+// 1) Solve support-plane system for circle/circle intersection.
+// 2) Handle near-parallel axis case as coincident/non-coincident supports.
+// 3) Return up to two unit-radial intersection candidates.
+// Assumptions:
+// - support_axis()/support_constant() satisfy each curve's support-circle contract.
 SupportIntersection intersect_supports(const SphericalCurve &first, const SphericalCurve &second,
                                        const internal::NumericPolicy &policy) {
   const cpp_helper_libs::linear_algebra::UnitVector3 axis_first = first.support_axis();
@@ -111,6 +121,7 @@ SupportIntersection intersect_supports(const SphericalCurve &first, const Spheri
   return {.coincident = false, .points = points};
 }
 
+// Classify a point intersection as endpoint-touch when either curve hits an endpoint.
 CurveIntersection
 point_intersection_for_locations(const cpp_helper_libs::linear_algebra::UnitVector3 &point,
                                  const CurveLocation &first_location,
@@ -123,6 +134,11 @@ point_intersection_for_locations(const cpp_helper_libs::linear_algebra::UnitVect
   return CurveIntersection::point(point, first_location, second_location);
 }
 
+// Handle coincident-support case by clipping two curve parameter ranges on the same support circle.
+// Algorithm:
+// 1) Build cut parameters from [0,1] plus mapped endpoints of curve B on curve A.
+// 2) Test interval midpoints to detect overlapping segments.
+// 3) Emit overlap segments or isolated point touches with duplicate suppression.
 // NOLINTNEXTLINE(readability-function-cognitive-complexity)
 std::vector<CurveIntersection> coincident_intersections(const SphericalCurve &first,
                                                         const SphericalCurve &second,
@@ -235,6 +251,7 @@ std::vector<CurveIntersection> coincident_intersections(const SphericalCurve &fi
   return intersections;
 }
 
+// Shared location metadata for point-like zero-length curves.
 CurveLocation zero_length_location() {
   return CurveLocation{.parameter = 0.0, .at_start = true, .at_end = true};
 }
@@ -243,14 +260,30 @@ CurveLocation zero_length_location() {
 
 std::vector<CurveIntersection>
 SphericalCurve::intersections_with(const SphericalCurve &other) const noexcept {
+  // Algorithm:
+  // - Execute shared intersection engine in tolerant policy mode.
+  // Assumptions:
+  // - Tolerant mode is the default behavior for public API calls.
   return intersections_with_policy(other, false);
 }
 
 std::vector<CurveIntersection>
 SphericalCurve::intersections_with_exact(const SphericalCurve &other) const noexcept {
+  // Algorithm:
+  // - Execute shared intersection engine in exact policy mode.
+  // Assumptions:
+  // - Callers choose this path when they want strict comparisons without epsilon slack.
   return intersections_with_policy(other, true);
 }
 
+// Unified intersection engine used by both tolerant and exact public APIs.
+// Algorithm:
+// 1) Resolve special cases for zero-length curves.
+// 2) Intersect support circles.
+// 3) If supports coincide, use interval-clipping path.
+// 4) Otherwise, validate support-intersection candidates against both curves.
+// Assumptions:
+// - Derived curve implementations provide coherent support/locate/parameter behavior.
 std::vector<CurveIntersection>
 SphericalCurve::intersections_with_policy(const SphericalCurve &other,
                                           const bool exact) const noexcept {

@@ -26,6 +26,8 @@ constexpr double kToleranceRadial = 1e-10;
 
 } // namespace
 
+// Build the tolerant numeric policy used by default.
+// Assumption: these thresholds are tuned for double-precision operations in this module.
 NumericPolicy tolerant_policy() noexcept {
   return {
       .support_epsilon = kToleranceSupport,
@@ -34,6 +36,7 @@ NumericPolicy tolerant_policy() noexcept {
   };
 }
 
+// Build an "exact" policy by forcing all tolerances to zero.
 NumericPolicy exact_policy() noexcept {
   return {
       .support_epsilon = 0.0,
@@ -42,14 +45,18 @@ NumericPolicy exact_policy() noexcept {
   };
 }
 
+// Dispatch helper that keeps callers from branching on policy choice.
 NumericPolicy select_policy(const bool exact) noexcept {
   return exact ? exact_policy() : tolerant_policy();
 }
 
+// Absolute-difference comparison used for robust floating-point predicates.
 bool nearly_equal(const double left, const double right, const double epsilon) noexcept {
   return std::fabs(left - right) <= epsilon;
 }
 
+// Wrap an angle to [0, 2*pi) using modulo arithmetic.
+// Assumption: input is in radians.
 double wrap_zero_to_two_pi(const double angle_radians) noexcept {
   double wrapped = std::fmod(angle_radians, kTwoPi);
   if (wrapped < 0.0) {
@@ -58,8 +65,12 @@ double wrap_zero_to_two_pi(const double angle_radians) noexcept {
   return wrapped;
 }
 
+// Clamp to valid cosine range before inverse-trigonometric calls.
 double clamp_cosine(const double value) noexcept { return std::clamp(value, -1.0, 1.0); }
 
+// Compare unit radials either exactly or by angular closeness.
+// Algorithm: exact policy uses component equality; tolerant policy converts dot product
+// to "1-cos(theta)" error and compares with radial epsilon.
 bool same_radial(const cpp_helper_libs::linear_algebra::UnitVector3 &left,
                  const cpp_helper_libs::linear_algebra::UnitVector3 &right,
                  const NumericPolicy &policy) noexcept {
@@ -71,6 +82,11 @@ bool same_radial(const cpp_helper_libs::linear_algebra::UnitVector3 &left,
   return (1.0 - cosine) <= policy.radial_epsilon;
 }
 
+// Rotate a unit vector around a unit axis using Rodrigues' rotation formula.
+// Assumptions:
+// - axis and value are valid unit vectors
+// - angle is in radians
+// Fallback: if normalization fails from numerical drift, return the input value.
 cpp_helper_libs::linear_algebra::UnitVector3
 rotate_about_axis_exact(const cpp_helper_libs::linear_algebra::UnitVector3 &value,
                         const cpp_helper_libs::linear_algebra::UnitVector3 &axis,
@@ -90,6 +106,8 @@ rotate_about_axis_exact(const cpp_helper_libs::linear_algebra::UnitVector3 &valu
   return value;
 }
 
+// Policy entry point for tolerant rotation.
+// Current behavior intentionally shares exact implementation.
 cpp_helper_libs::linear_algebra::UnitVector3
 rotate_about_axis_tolerant(const cpp_helper_libs::linear_algebra::UnitVector3 &value,
                            const cpp_helper_libs::linear_algebra::UnitVector3 &axis,
@@ -97,6 +115,9 @@ rotate_about_axis_tolerant(const cpp_helper_libs::linear_algebra::UnitVector3 &v
   return rotate_about_axis_exact(value, axis, angle_radians);
 }
 
+// Construct any orthogonal unit tangent by projecting simple basis candidates
+// onto the plane perpendicular to the axis and normalizing the first valid result.
+// Assumption: axis is unit length.
 std::optional<cpp_helper_libs::linear_algebra::UnitVector3>
 any_orthogonal_unit(const cpp_helper_libs::linear_algebra::UnitVector3 &axis) noexcept {
   const std::array<cpp_helper_libs::linear_algebra::Vector3, 3> candidates = {
@@ -118,6 +139,12 @@ any_orthogonal_unit(const cpp_helper_libs::linear_algebra::UnitVector3 &axis) no
   return std::nullopt;
 }
 
+// Build a SphericalRay tangent to an oriented support circle at a specific point.
+// Algorithm:
+// 1) Try geometrically correct tangent axis x point (with requested orientation sign).
+// 2) If degenerate, try fallback Cartesian directions projected onto tangent plane.
+// 3) As a last resort, use any orthogonal direction.
+// Assumption: point lies on the unit sphere.
 SphericalRay make_ray_on_oriented_circle(const cpp_helper_libs::linear_algebra::UnitVector3 &axis,
                                          const cpp_helper_libs::linear_algebra::UnitVector3 &point,
                                          const double direction_sign, const bool exact) noexcept {
@@ -156,6 +183,14 @@ SphericalRay make_ray_on_oriented_circle(const cpp_helper_libs::linear_algebra::
   std::abort();
 }
 
+// Locate a point along an oriented circular sweep and convert it to normalized curve parameter.
+// Algorithm:
+// 1) Verify support-circle membership via axis.dot(point)=support_constant.
+// 2) Compute signed angular travel from start to point around axis.
+// 3) Convert travel into [0, 1] parameter and derive endpoint flags.
+// Assumptions:
+// - start_point is on the same support circle.
+// - signed_sweep encodes traversal direction.
 std::optional<CurveLocation> locate_point_on_oriented_circle(
     const cpp_helper_libs::linear_algebra::UnitVector3 &axis, const double support_constant,
     const cpp_helper_libs::linear_algebra::UnitVector3 &start_point, const double signed_sweep,
@@ -199,6 +234,8 @@ std::optional<CurveLocation> locate_point_on_oriented_circle(
   return CurveLocation{.parameter = parameter, .at_start = at_start, .at_end = at_end};
 }
 
+// Compute unit-sphere arc length for a small-circle sweep.
+// Geometric identity: ds = sin(radius) * d(theta), integrated over the sweep.
 double small_arc_length_radians(const double radius_radians, const double sweep_radians) noexcept {
   return std::fabs(std::sin(radius_radians) * sweep_radians);
 }

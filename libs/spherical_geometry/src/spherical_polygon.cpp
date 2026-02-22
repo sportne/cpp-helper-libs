@@ -27,6 +27,11 @@ constexpr double kBoundaryTolerance = 1e-10;
 
 bool edges_adjacent(const std::size_t first_index, const std::size_t second_index,
                     const std::size_t edge_count) {
+  // Algorithm:
+  // - Treat identical indices as adjacent (same edge).
+  // - Treat cyclic predecessor/successor indices as adjacent.
+  // Assumptions:
+  // - Edges are ordered around a closed polygon ring.
   if (first_index == second_index) {
     return true;
   }
@@ -45,6 +50,12 @@ bool edges_adjacent(const std::size_t first_index, const std::size_t second_inde
 bool point_on_boundary(const std::vector<MinorArc> &edges,
                        const cpp_helper_libs::linear_algebra::UnitVector3 &point,
                        const bool exact) {
+  // Algorithm:
+  // - Wrap the query point as a zero-length curve.
+  // - Intersect each boundary edge with that point-curve.
+  // - Report true when any edge contains the point.
+  // Assumptions:
+  // - Curve intersection engine provides robust endpoint handling.
   const std::optional<ZeroLengthCurve> point_curve = ZeroLengthCurve::at_radial(point);
   if (!point_curve.has_value()) {
     return false;
@@ -60,6 +71,14 @@ bool point_on_boundary(const std::vector<MinorArc> &edges,
 
 } // namespace
 
+// Algorithm:
+// - Require at least three vertices (after optional duplicate closing vertex removal).
+// - Build each side as a MinorArc between consecutive vertices.
+// - Check every non-adjacent edge pair for self-intersections:
+//   reject overlap segments or interior crossings.
+// - Accept endpoint-only contacts for adjacent connectivity.
+// Assumptions:
+// - Input order defines polygon boundary traversal direction.
 // NOLINTNEXTLINE(readability-function-cognitive-complexity)
 std::optional<SphericalPolygon> SphericalPolygon::from_vertices(
     const std::vector<cpp_helper_libs::linear_algebra::UnitVector3> &vertices) noexcept {
@@ -122,44 +141,84 @@ std::optional<SphericalPolygon> SphericalPolygon::from_vertices(
 
 bool SphericalPolygon::contains_inclusive(
     const cpp_helper_libs::linear_algebra::UnitVector3 &point) const noexcept {
+  // Algorithm:
+  // - Delegate to winding-based containment with inclusive boundary mode.
+  // Assumptions:
+  // - Default mode uses tolerant numerics.
   return contains_policy(point, true, false);
 }
 
 bool SphericalPolygon::contains_exclusive(
     const cpp_helper_libs::linear_algebra::UnitVector3 &point) const noexcept {
+  // Algorithm:
+  // - Delegate to winding-based containment with exclusive boundary mode.
+  // Assumptions:
+  // - Boundary points are excluded.
   return contains_policy(point, false, false);
 }
 
 bool SphericalPolygon::contains_inclusive_exact(
     const cpp_helper_libs::linear_algebra::UnitVector3 &point) const noexcept {
+  // Algorithm:
+  // - Delegate to winding-based containment with exact + inclusive semantics.
+  // Assumptions:
+  // - Exact mode uses strict thresholding on winding sum.
   return contains_policy(point, true, true);
 }
 
 bool SphericalPolygon::contains_exclusive_exact(
     const cpp_helper_libs::linear_algebra::UnitVector3 &point) const noexcept {
+  // Algorithm:
+  // - Delegate to winding-based containment with exact + exclusive semantics.
+  // Assumptions:
+  // - Exact mode has no tolerance buffer near the boundary.
   return contains_policy(point, false, true);
 }
 
 bool SphericalPolygon::boundary_intersects_inclusive(const SphericalCurve &curve) const noexcept {
+  // Algorithm:
+  // - Delegate to edge-intersection policy with inclusive semantics.
+  // Assumptions:
+  // - Endpoint touches count in inclusive mode.
   return boundary_intersects_policy(curve, true, false);
 }
 
 bool SphericalPolygon::boundary_intersects_exclusive(const SphericalCurve &curve) const noexcept {
+  // Algorithm:
+  // - Delegate to edge-intersection policy with exclusive semantics.
+  // Assumptions:
+  // - Endpoint-only touches are excluded.
   return boundary_intersects_policy(curve, false, false);
 }
 
 bool SphericalPolygon::boundary_intersects_inclusive_exact(
     const SphericalCurve &curve) const noexcept {
+  // Algorithm:
+  // - Delegate to exact edge-intersection policy with inclusive semantics.
+  // Assumptions:
+  // - Exact mode disables tolerance in curve intersection calculations.
   return boundary_intersects_policy(curve, true, true);
 }
 
 bool SphericalPolygon::boundary_intersects_exclusive_exact(
     const SphericalCurve &curve) const noexcept {
+  // Algorithm:
+  // - Delegate to exact edge-intersection policy with exclusive semantics.
+  // Assumptions:
+  // - Endpoint-only events are filtered out.
   return boundary_intersects_policy(curve, false, true);
 }
 
 bool SphericalPolygon::contains_policy(const cpp_helper_libs::linear_algebra::UnitVector3 &point,
                                        const bool inclusive, const bool exact) const noexcept {
+  // Algorithm:
+  // - First test whether point lies on boundary; return based on inclusivity.
+  // - Otherwise compute spherical winding around the query point:
+  //   project consecutive vertices onto tangent plane at point, normalize, and accumulate signed
+  //   turning angles.
+  // - Compare accumulated winding against pi threshold to classify interior.
+  // Assumptions:
+  // - Polygon is simple and represented by MinorArc edges created at construction.
   if (point_on_boundary(edges_, point, exact)) {
     return inclusive;
   }
@@ -199,6 +258,12 @@ bool SphericalPolygon::contains_policy(const cpp_helper_libs::linear_algebra::Un
 
 bool SphericalPolygon::boundary_intersects_policy(const SphericalCurve &curve, const bool inclusive,
                                                   const bool exact) const noexcept {
+  // Algorithm:
+  // - Intersect query curve with each polygon edge.
+  // - Inclusive mode accepts any intersection.
+  // - Exclusive mode requires at least one intersection that is not an endpoint touch.
+  // Assumptions:
+  // - Boundary is fully represented by `edges_` in order.
   return std::any_of(edges_.begin(), edges_.end(), [&](const MinorArc &edge) {
     const std::vector<CurveIntersection> intersections =
         exact ? edge.intersections_with_exact(curve) : edge.intersections_with(curve);

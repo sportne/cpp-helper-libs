@@ -39,14 +39,25 @@ enum class CurveIntersectionKind {
  */
 class CurveIntersection final {
 public:
+  /**
+   * @brief Build an ordinary point-intersection record.
+   */
   static CurveIntersection point(const cpp_helper_libs::linear_algebra::UnitVector3 &point,
                                  const CurveLocation &first_curve_location,
                                  const CurveLocation &second_curve_location) noexcept;
 
+  /**
+   * @brief Build an endpoint-touch intersection record.
+   */
   static CurveIntersection endpoint_touch(const cpp_helper_libs::linear_algebra::UnitVector3 &point,
                                           const CurveLocation &first_curve_location,
                                           const CurveLocation &second_curve_location) noexcept;
 
+  /**
+   * @brief Build an overlap-segment intersection record.
+   *
+   * `first_point` and `second_point` delimit the overlapping boundary segment.
+   */
   static CurveIntersection
   overlap_segment(const cpp_helper_libs::linear_algebra::UnitVector3 &first_point,
                   const cpp_helper_libs::linear_algebra::UnitVector3 &second_point,
@@ -55,29 +66,53 @@ public:
                   const CurveLocation &second_curve_first_location,
                   const CurveLocation &second_curve_second_location) noexcept;
 
+  /**
+   * @brief Intersection category.
+   */
   CurveIntersectionKind kind() const noexcept { return kind_; }
 
+  /**
+   * @brief First point of intersection geometry.
+   */
   cpp_helper_libs::linear_algebra::UnitVector3 first_point() const noexcept { return first_point_; }
 
+  /**
+   * @brief Optional second geometry point (present for overlap segments).
+   */
   std::optional<cpp_helper_libs::linear_algebra::UnitVector3> second_point() const noexcept {
     return second_point_;
   }
 
+  /**
+   * @brief Location on the first curve corresponding to @ref first_point.
+   */
   CurveLocation first_curve_first_location() const noexcept { return first_curve_first_location_; }
 
+  /**
+   * @brief Optional location on the first curve corresponding to @ref second_point.
+   */
   std::optional<CurveLocation> first_curve_second_location() const noexcept {
     return first_curve_second_location_;
   }
 
+  /**
+   * @brief Location on the second curve corresponding to @ref first_point.
+   */
   CurveLocation second_curve_first_location() const noexcept {
     return second_curve_first_location_;
   }
 
+  /**
+   * @brief Optional location on the second curve corresponding to @ref second_point.
+   */
   std::optional<CurveLocation> second_curve_second_location() const noexcept {
     return second_curve_second_location_;
   }
 
 private:
+  /**
+   * @brief Internal constructor used by named factory methods.
+   */
   CurveIntersection(CurveIntersectionKind kind,
                     const cpp_helper_libs::linear_algebra::UnitVector3 &first_point,
                     const CurveLocation &first_curve_first_location,

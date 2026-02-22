@@ -23,23 +23,43 @@ constexpr double kTwoPi = 2.0 * std::numbers::pi_v<double>;
 
 } // namespace
 
+// Algorithm:
+// - Canonicalize each input independently: clamp latitude to [-pi/2, +pi/2] and wrap
+//   longitude to [-pi, +pi).
+// Assumptions:
+// - Clamping/wrapping is preferable to rejecting out-of-range angles for this API.
 // NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
 Coordinate::Coordinate(cpp_helper_libs::quantities::Angle latitude,
                        cpp_helper_libs::quantities::Angle longitude) noexcept
     : latitude_(clamp_latitude(latitude)), longitude_(wrap_longitude(longitude)) {}
 
+// Algorithm:
+// - Build Angle values from degree scalars, then delegate to the canonicalizing constructor.
+// Assumptions:
+// - Degree inputs may be any finite values; constructor normalization handles bounds.
 Coordinate Coordinate::degrees(const double latitude_degrees,
                                const double longitude_degrees) noexcept {
   return {cpp_helper_libs::quantities::Angle::degrees(latitude_degrees),
           cpp_helper_libs::quantities::Angle::degrees(longitude_degrees)};
 }
 
+// Algorithm:
+// - Build Angle values from radian scalars, then delegate to the canonicalizing constructor.
+// Assumptions:
+// - Radian inputs may be any finite values; constructor normalization handles bounds.
 Coordinate Coordinate::radians(const double latitude_radians,
                                const double longitude_radians) noexcept {
   return {cpp_helper_libs::quantities::Angle::radians(latitude_radians),
           cpp_helper_libs::quantities::Angle::radians(longitude_radians)};
 }
 
+// Algorithm:
+// - Recover latitude from z using asin(z).
+// - Recover longitude in the equatorial plane using atan2(y, x).
+// - Construct a normalized Coordinate from those angles.
+// Assumptions:
+// - `radial` is unit length by type contract, but z is still clamped defensively for numerical
+//   robustness near +/-1.
 Coordinate
 Coordinate::from_radial(const cpp_helper_libs::linear_algebra::UnitVector3 &radial) noexcept {
   const double latitude_radians_value = std::asin(std::clamp(radial.z(), -1.0, 1.0));
@@ -48,6 +68,13 @@ Coordinate::from_radial(const cpp_helper_libs::linear_algebra::UnitVector3 &radi
           cpp_helper_libs::quantities::Angle::radians(longitude_radians_value)};
 }
 
+// Algorithm:
+// - Convert spherical angles to Cartesian components on the unit sphere.
+// - Prefer exact unit construction from components.
+// - Fall back to normalization if roundoff drifts from unit length.
+// - If all constructions fail (should be unreachable), abort.
+// Assumptions:
+// - Stored latitude/longitude are already canonicalized by the constructor.
 cpp_helper_libs::linear_algebra::UnitVector3 Coordinate::to_radial() const noexcept {
   const double latitude_radians = latitude_.in(cpp_helper_libs::quantities::Angle::Unit::Radian);
   const double longitude_radians = longitude_.in(cpp_helper_libs::quantities::Angle::Unit::Radian);
@@ -86,6 +113,10 @@ cpp_helper_libs::linear_algebra::UnitVector3 Coordinate::to_radial() const noexc
   std::abort();
 }
 
+// Algorithm:
+// - Convert to radians and clamp to valid geodetic latitude bounds [-pi/2, +pi/2].
+// Assumptions:
+// - Latitude beyond poles should be saturated instead of wrapped.
 cpp_helper_libs::quantities::Angle
 Coordinate::clamp_latitude(const cpp_helper_libs::quantities::Angle latitude) noexcept {
   const double latitude_radians = latitude.in(cpp_helper_libs::quantities::Angle::Unit::Radian);
@@ -93,6 +124,11 @@ Coordinate::clamp_latitude(const cpp_helper_libs::quantities::Angle latitude) no
   return cpp_helper_libs::quantities::Angle::radians(clamped);
 }
 
+// Algorithm:
+// - Shift by +pi, apply modulo 2pi, then shift back by -pi.
+// - Correct negative modulo results to keep final longitude in [-pi, +pi).
+// Assumptions:
+// - Longitude represents a cyclic quantity and should always be wrapped, not clamped.
 cpp_helper_libs::quantities::Angle
 Coordinate::wrap_longitude(const cpp_helper_libs::quantities::Angle longitude) noexcept {
   const double longitude_radians_value =

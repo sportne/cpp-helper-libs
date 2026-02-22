@@ -40,8 +40,17 @@ public:
   from_radial_and_tangent(const cpp_helper_libs::linear_algebra::UnitVector3 &radial,
                           const cpp_helper_libs::linear_algebra::UnitVector3 &tangent) noexcept;
 
+  /**
+   * @brief Radial unit vector (position on sphere).
+   */
   cpp_helper_libs::linear_algebra::UnitVector3 radial() const noexcept { return radial_; }
+  /**
+   * @brief Normal unit vector of the local frame (`radial x tangent`).
+   */
   cpp_helper_libs::linear_algebra::UnitVector3 normal() const noexcept { return normal_; }
+  /**
+   * @brief Tangent unit vector of the local frame (forward direction).
+   */
   cpp_helper_libs::linear_algebra::UnitVector3 tangent() const noexcept { return tangent_; }
 
   /**
@@ -65,6 +74,9 @@ public:
   SphericalRay rotate_about_radial_exact(cpp_helper_libs::quantities::Angle angle) const noexcept;
 
 private:
+  /**
+   * @brief Internal constructor for already-validated orthonormal frames.
+   */
   SphericalRay(const cpp_helper_libs::linear_algebra::UnitVector3 &radial,
                const cpp_helper_libs::linear_algebra::UnitVector3 &normal,
                const cpp_helper_libs::linear_algebra::UnitVector3 &tangent) noexcept

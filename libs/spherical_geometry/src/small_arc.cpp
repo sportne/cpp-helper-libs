@@ -21,6 +21,10 @@ constexpr double kTwoPi = 2.0 * std::numbers::pi_v<double>;
 constexpr double kTolerance = 1e-10;
 
 double turn_direction_sign(const TurnDirection direction) noexcept {
+  // Algorithm:
+  // - Map enum orientation to +/-1 multiplier used in sweep and tangent formulas.
+  // Assumptions:
+  // - Counter-clockwise is treated as positive orientation.
   return direction == TurnDirection::CounterClockwise ? 1.0 : -1.0;
 }
 
@@ -30,6 +34,14 @@ std::optional<SmallArc> SmallArc::from_center_start_direction_and_sweep(
     const cpp_helper_libs::linear_algebra::UnitVector3 &center,
     const cpp_helper_libs::quantities::Angle radius, const SphericalRay &start_ray,
     const TurnDirection turn_direction, const cpp_helper_libs::quantities::Angle sweep) noexcept {
+  // Algorithm:
+  // - Validate radius in (0, pi) and sweep in (0, 2pi).
+  // - Verify start radial is on the requested small circle by matching center distance to radius.
+  // - Compute expected tangent from center x start_radial with direction sign.
+  // - Require provided start tangent to align with expected orientation.
+  // Assumptions:
+  // - `center` is unit radial to circle center on the sphere.
+  // - Tolerance-based checks handle floating-point drift near boundaries.
   const double radius_radians = radius.in(cpp_helper_libs::quantities::Angle::Unit::Radian);
   const double sweep_radians = sweep.in(cpp_helper_libs::quantities::Angle::Unit::Radian);
 
@@ -62,35 +74,68 @@ std::optional<SmallArc> SmallArc::from_center_start_direction_and_sweep(
   return SmallArc(center, radius, start_ray, turn_direction, sweep);
 }
 
+// Algorithm:
+// - Return start radial from cached start ray.
+// Assumptions:
+// - Start ray was validated by factory checks.
 cpp_helper_libs::linear_algebra::UnitVector3 SmallArc::start_radial() const noexcept {
   return start_ray_.radial();
 }
 
+// Algorithm:
+// - Evaluate parametric endpoint at parameter 1.
+// Assumptions:
+// - Parametric evaluation follows signed sweep orientation.
 cpp_helper_libs::linear_algebra::UnitVector3 SmallArc::end_radial() const noexcept {
   return point_at_parameter(1.0);
 }
 
+// Algorithm:
+// - Return stored start frame.
+// Assumptions:
+// - Object is immutable.
 SphericalRay SmallArc::start_ray() const noexcept { return start_ray_; }
 
 SphericalRay SmallArc::end_ray() const noexcept {
+  // Algorithm:
+  // - Compute end radial from parameterization.
+  // - Rebuild a tangent/normal frame on the oriented small circle at that point.
+  // Assumptions:
+  // - `make_ray_on_oriented_circle` shares orientation semantics with construction.
   const cpp_helper_libs::linear_algebra::UnitVector3 end_point = end_radial();
   const double sign = turn_direction_sign(turn_direction_);
   return internal::make_ray_on_oriented_circle(center_, end_point, sign, false);
 }
 
+// Algorithm:
+// - Compute geometric small-circle length as |sin(radius) * signed_sweep|.
+// Assumptions:
+// - Sphere radius is 1, so length is an angular distance.
 cpp_helper_libs::quantities::Angle SmallArc::length() const noexcept {
   return cpp_helper_libs::quantities::Angle::radians(internal::small_arc_length_radians(
       radius_.in(cpp_helper_libs::quantities::Angle::Unit::Radian), signed_sweep_radians()));
 }
 
+// Algorithm:
+// - Return small-circle support-plane axis (the circle center radial).
+// Assumptions:
+// - Small-circle support equation uses center_ as normal.
 cpp_helper_libs::linear_algebra::UnitVector3 SmallArc::support_axis() const noexcept {
   return center_;
 }
 
+// Algorithm:
+// - Return support-plane constant cos(radius), i.e., center · point for all boundary points.
+// Assumptions:
+// - Radius stored as central angle from center radial to circle points.
 double SmallArc::support_constant() const noexcept {
   return std::cos(radius_.in(cpp_helper_libs::quantities::Angle::Unit::Radian));
 }
 
+// Algorithm:
+// - Apply orientation sign to unsigned sweep.
+// Assumptions:
+// - Direction enum fully determines sign convention.
 double SmallArc::signed_sweep_radians() const noexcept {
   const double sweep_radians = sweep_.in(cpp_helper_libs::quantities::Angle::Unit::Radian);
   return turn_direction_sign(turn_direction_) * sweep_radians;
@@ -99,17 +144,29 @@ double SmallArc::signed_sweep_radians() const noexcept {
 std::optional<CurveLocation>
 SmallArc::locate_point(const cpp_helper_libs::linear_algebra::UnitVector3 &point,
                        const bool exact) const noexcept {
+  // Algorithm:
+  // - Delegate location query to oriented-circle helper with this arc support data.
+  // Assumptions:
+  // - Helper handles both support-plane check and signed-sweep interval test.
   return internal::locate_point_on_oriented_circle(
       support_axis(), support_constant(), start_radial(), signed_sweep_radians(), point, exact);
 }
 
 cpp_helper_libs::linear_algebra::UnitVector3
 SmallArc::point_at_parameter(const double parameter) const noexcept {
+  // Algorithm:
+  // - Clamp parameter to [0,1] and rotate start radial around center axis.
+  // Assumptions:
+  // - Rotation by signed sweep preserves membership on the small circle.
   const double clamped = std::clamp(parameter, 0.0, 1.0);
   return internal::rotate_about_axis_tolerant(start_radial(), support_axis(),
                                               clamped * signed_sweep_radians());
 }
 
+// Algorithm:
+// - Return false because SmallArc models non-degenerate swept segments.
+// Assumptions:
+// - Factory prevents zero-sweep instances.
 bool SmallArc::is_zero_length_curve() const noexcept { return false; }
 
 } // namespace cpp_helper_libs::spherical_geometry
