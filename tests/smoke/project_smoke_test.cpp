@@ -1,3 +1,6 @@
+// Copyright (c) 2026 sportne
+// SPDX-License-Identifier: MIT
+
 #include <gtest/gtest.h>
 
 #include <numbers>
@@ -36,4 +39,21 @@ TEST(ProjectSmokeTest, LinearAlgebraLibraryLinksAndExecutes) {
   EXPECT_EQ(right_normal_value.as_vector(),
             cpp_helper_libs::linear_algebra::Vector3(0.0, 0.0, 1.0));
   EXPECT_NEAR(angle_value, std::numbers::pi_v<double> / 2.0, kTolerance);
+}
+
+TEST(ProjectSmokeTest, Matrix3LibraryLinksAndExecutes) {
+  constexpr double kTolerance = 1e-12;
+
+  const cpp_helper_libs::linear_algebra::Matrix3 matrix_value(4.0, 1.0, 2.0, 1.0, 5.0, 1.0, 2.0,
+                                                              1.0, 3.0);
+  const cpp_helper_libs::linear_algebra::Vector3 rhs(7.0, 8.0, 5.0);
+
+  const auto solved = matrix_value.solve(rhs);
+  if (!solved.has_value()) {
+    FAIL() << "Expected Matrix3 solve() to succeed";
+  }
+
+  const cpp_helper_libs::linear_algebra::Vector3 solved_value = solved.value();
+  EXPECT_NEAR(solved_value.x(), 1.2162162162162162, kTolerance);
+  EXPECT_NEAR(matrix_value.determinant(), 37.0, kTolerance);
 }

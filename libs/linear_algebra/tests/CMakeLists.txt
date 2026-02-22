@@ -5,7 +5,10 @@ include(GoogleTest)
 add_executable(cpphl_linear_algebra_tests)
 target_sources(cpphl_linear_algebra_tests
   PRIVATE
-    linear_algebra_test.cpp
+    matrix3_test.cpp
+    matrix_test.cpp
+    unit_vector3_test.cpp
+    vector3_test.cpp
 )
 
 # Link module under test plus gtest main().

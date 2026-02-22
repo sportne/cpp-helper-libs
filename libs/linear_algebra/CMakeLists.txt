@@ -2,6 +2,9 @@
 add_library(cpphl_linear_algebra_obj OBJECT)
 target_sources(cpphl_linear_algebra_obj
   PRIVATE
+    src/decompositions.cpp
+    src/matrix.cpp
+    src/matrix3.cpp
     src/vector3.cpp
     src/unit_vector3.cpp
 )

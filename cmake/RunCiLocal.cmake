@@ -19,6 +19,43 @@ function(run_step)
   endif()
 endfunction()
 
+function(clean_coverage_artifacts)
+  # Remove stale coverage outputs from previous source layouts (for example,
+  # renamed/deleted test files) so gcovr does not try to resolve missing paths.
+  # Keep .gcno files because gcov needs them as notes for matching .gcda data.
+  file(GLOB_RECURSE stale_gcda "${REPO_ROOT}/build/gcc-coverage/*.gcda")
+  file(GLOB_RECURSE stale_gcov "${REPO_ROOT}/build/gcc-coverage/*.gcov")
+  set(stale_coverage_files ${stale_gcda} ${stale_gcov})
+  list(LENGTH stale_coverage_files stale_count)
+  if(stale_count GREATER 0)
+    file(REMOVE ${stale_coverage_files})
+    message(STATUS "[ci-local] removed ${stale_count} stale coverage files")
+  endif()
+endfunction()
+
+function(prune_test_coverage_artifacts)
+  # gcovr can fail while parsing test translation-unit artifacts before exclude
+  # filters apply. Remove test-only coverage artifacts because the coverage gate
+  # targets first-party library code under libs/ (tests are excluded).
+  file(GLOB_RECURSE all_cov_files
+    "${REPO_ROOT}/build/gcc-coverage/*.gcda"
+    "${REPO_ROOT}/build/gcc-coverage/*.gcno"
+  )
+
+  set(test_cov_files)
+  foreach(cov_file IN LISTS all_cov_files)
+    if(cov_file MATCHES "/tests/")
+      list(APPEND test_cov_files "${cov_file}")
+    endif()
+  endforeach()
+
+  list(LENGTH test_cov_files test_cov_count)
+  if(test_cov_count GREATER 0)
+    file(REMOVE ${test_cov_files})
+    message(STATUS "[ci-local] pruned ${test_cov_count} test coverage files")
+  endif()
+endfunction()
+
 # 1) Debug build: format gate + tests.
 message(STATUS "[ci-local] clang-debug: configure/build/format-check/test")
 run_step("${CMAKE_COMMAND}" --preset clang-debug)
@@ -46,9 +83,14 @@ run_step("${CMAKE_COMMAND}" -E env ASAN_OPTIONS=detect_leaks=0 "${CTEST_EXECUTAB
 
 # 5) Coverage build + tests + threshold check.
 message(STATUS "[ci-local] gcc-coverage: configure/build/test/coverage gate")
+# Start coverage from a fresh build tree to avoid stale gcov artifacts after
+# source/test file renames.
+run_step("${CMAKE_COMMAND}" -E rm -rf "${REPO_ROOT}/build/gcc-coverage")
 run_step("${CMAKE_COMMAND}" --preset gcc-coverage)
 run_step("${CMAKE_COMMAND}" --build --preset build-gcc-coverage --parallel)
+clean_coverage_artifacts()
 run_step("${CTEST_EXECUTABLE}" --preset test-gcc-coverage)
+prune_test_coverage_artifacts()
 run_step(
   "${GCOVR_EXECUTABLE}"
   --root .

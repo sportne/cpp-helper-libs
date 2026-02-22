@@ -1,3 +1,6 @@
+// Copyright (c) 2026 sportne
+// SPDX-License-Identifier: MIT
+
 #include <gtest/gtest.h>
 
 #include <numbers>
@@ -37,4 +40,16 @@ TEST(ProjectSmokeSharedTest, LinearAlgebraSharedLibraryLinksAndExecutes) {
   EXPECT_NEAR(tangent_value.z(), 0.8, kTolerance);
   EXPECT_NEAR(x_axis_value.central_angle_radians(y_axis_value), std::numbers::pi_v<double> / 2.0,
               kTolerance);
+}
+
+TEST(ProjectSmokeSharedTest, Matrix3SharedLibraryLinksAndExecutes) {
+  constexpr double kTolerance = 1e-12;
+
+  const cpp_helper_libs::linear_algebra::Matrix3 matrix_value(1.0, 2.0, 3.0, 0.0, 1.0, 4.0, 5.0,
+                                                              6.0, 0.0);
+  const cpp_helper_libs::linear_algebra::Matrix3 product = matrix_value.multiply(matrix_value);
+
+  EXPECT_NEAR(product(0U, 0U), 16.0, kTolerance);
+  EXPECT_NEAR(product(0U, 1U), 22.0, kTolerance);
+  EXPECT_NEAR(product(0U, 2U), 11.0, kTolerance);
 }
