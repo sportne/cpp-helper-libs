@@ -9,8 +9,9 @@
 namespace cpp_helper_libs::linear_algebra {
 namespace {
 
-// Unit-magnitude check tolerance for floating-point roundoff.
+// Target magnitude for unit vectors.
 constexpr double kUnitLength = 1.0;
+// Allowed magnitude drift due to floating-point roundoff.
 constexpr double kUnitLengthTolerance = 1e-12;
 
 } // namespace

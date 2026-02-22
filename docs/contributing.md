@@ -8,6 +8,11 @@
 - Update `README.md` and files in `docs/` when behavior, modules, or workflows change.
 - Keep CMake target-based and avoid global compile flag mutations when possible.
 - Keep warning-clean code; first-party targets use warnings-as-errors by default.
+- Write beginner-friendly docs and comments for new APIs:
+  - assume a high school senior contributor is reading the code for the first time
+  - explain important domain terms and invariants
+  - explain what non-obvious constants mean (units, thresholds, geometry meaning)
+  - explain what each private field stores when the class is part of the public API surface
 
 ## Standard Change Flow
 
@@ -64,4 +69,5 @@ cmake --workflow --preset ci-local
 - Scope is module-focused and avoids unrelated refactors.
 - New/changed behavior has tests.
 - Docs are updated where needed.
+- New constants and private fields are documented with intent-level comments.
 - Local CI-equivalent checks pass.

@@ -49,3 +49,6 @@ libs/<module>/
 - `linear_algebra`: immutable 3D vectors and matrix math (`Matrix3` plus a basic dynamic `Matrix`).
   Advanced routines (SVD/eigendecomposition/pseudoinverse/reshape-slicing) are intentionally
   deferred to a later phase.
+- `spherical_geometry`: spherical coordinate/ray primitives, curve types (`MinorArc`, `MajorArc`,
+  `SmallArc`, `ZeroLengthCurve`), curve intersections, and spherical shapes (`SphericalPolygon`,
+  `SphericalCircle`, `SphericalEllipse`).

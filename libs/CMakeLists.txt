@@ -2,3 +2,4 @@
 add_subdirectory(math)
 add_subdirectory(quantities)
 add_subdirectory(linear_algebra)
+add_subdirectory(spherical_geometry)

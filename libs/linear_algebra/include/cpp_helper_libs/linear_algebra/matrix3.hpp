@@ -191,6 +191,7 @@ public:
 private:
   explicit constexpr Matrix3(const std::array<double, 9> &values) noexcept : values_(values) {}
 
+  /// Flat row-major storage of the 3x3 entries.
   std::array<double, 9> values_;
 };
 

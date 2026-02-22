@@ -11,6 +11,7 @@ target_link_libraries(cpphl_smoke_tests
     cpphl::math
     cpphl::quantities
     cpphl::linear_algebra
+    cpphl::spherical_geometry
     GTest::gtest_main
 )
 
@@ -30,6 +31,7 @@ target_link_libraries(cpphl_smoke_shared_tests
     cpphl::math_shared
     cpphl::quantities_shared
     cpphl::linear_algebra_shared
+    cpphl::spherical_geometry_shared
     GTest::gtest_main
 )
 

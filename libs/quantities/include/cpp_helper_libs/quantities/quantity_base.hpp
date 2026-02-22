@@ -129,9 +129,11 @@ public:
 protected:
   explicit constexpr QuantityBase(const double raw) noexcept : raw_(raw) {}
 
+  /// Access canonical stored value (for example: meters, seconds, radians).
   double raw_value() const noexcept { return raw_; }
 
 private:
+  /// Canonical scalar representation used for arithmetic/comparison.
   const double raw_;
 };
 

@@ -13,7 +13,9 @@
 namespace cpp_helper_libs::linear_algebra {
 namespace {
 
+// Fixed dimension for Matrix3 operations.
 constexpr std::size_t kDimension = 3U;
+// Total entry count in a 3x3 matrix.
 constexpr std::size_t kMatrixEntryCount = kDimension * kDimension;
 // Single tolerance used to decide when a floating-point value is "effectively zero".
 // We use this for singularity checks, pivot checks, and Cholesky SPD validation.

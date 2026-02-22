@@ -85,8 +85,10 @@ public:
   static Speed from_raw(double raw) noexcept;
 
 private:
+  /// Construct directly from canonical raw meters per second.
   explicit constexpr Speed(double raw) noexcept : QuantityBase(raw) {}
 
+  /// Convert from a user-facing unit into canonical raw meters per second.
   static double to_raw(double value, Unit unit);
 };
 

@@ -81,8 +81,10 @@ public:
   static Angle from_raw(double raw) noexcept;
 
 private:
+  /// Construct directly from canonical raw radians.
   explicit constexpr Angle(double raw) noexcept : QuantityBase(raw) {}
 
+  /// Convert from a user-facing unit into canonical raw radians.
   static double to_raw(double value, Unit unit);
 };
 

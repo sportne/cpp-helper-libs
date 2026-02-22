@@ -7,6 +7,7 @@ The repository currently contains first-party modules:
 - `libs/quantities`: strongly-typed measurable quantities with unit conversions
 - `libs/linear_algebra`: immutable vector and matrix helpers (`Vector3`, `UnitVector3`, `Matrix3`,
   `Matrix`)
+- `libs/spherical_geometry`: coordinate, ray, curve, and shape utilities on the unit sphere
 
 Each module is built as both:
 - static library target: `cpphl_<module>` (alias: `cpphl::<module>`)
@@ -38,6 +39,7 @@ make debug
 #include "cpp_helper_libs/linear_algebra/linear_algebra.hpp"
 #include "cpp_helper_libs/math/arithmetic.hpp"
 #include "cpp_helper_libs/quantities/quantities.hpp"
+#include "cpp_helper_libs/spherical_geometry/spherical_geometry.hpp"
 
 const int sum = cpp_helper_libs::math::add(2, 3); // 5
 const int diff = cpp_helper_libs::math::sub(7, 4); // 3
@@ -55,6 +57,12 @@ const cpp_helper_libs::linear_algebra::Matrix3 a(4.0, 1.0, 2.0,
                                                   2.0, 1.0, 3.0);
 const auto x = a.solve(cpp_helper_libs::linear_algebra::Vector3(7.0, 8.0, 5.0));
 const double det = a.determinant(); // 37.0
+
+const auto lon_lat = cpp_helper_libs::spherical_geometry::Coordinate::degrees(40.0, -74.0);
+const auto radial = lon_lat.to_radial();
+const auto equator_quarter = cpp_helper_libs::spherical_geometry::MinorArc::from_endpoints(
+    cpp_helper_libs::linear_algebra::UnitVector3::from_components(1.0, 0.0, 0.0).value(),
+    cpp_helper_libs::linear_algebra::UnitVector3::from_components(0.0, 1.0, 0.0).value());
 ```
 
 ## Repository Layout
@@ -67,6 +75,7 @@ const double det = a.determinant(); // 37.0
 │   └── math/
 │   └── linear_algebra/
 │   └── quantities/
+│   └── spherical_geometry/
 ├── tests/                 # Cross-module smoke/integration tests
 └── third_party/           # Vendored dependencies (GoogleTest submodule)
 ```
@@ -159,6 +168,9 @@ cmake --workflow --preset ci-local
 - `docs/build-and-test.md`
 - `docs/architecture.md`
 - `docs/contributing.md`
+- `docs/linear-algebra.md`
+- `docs/quantities.md`
+- `docs/spherical-geometry.md`
 - `docs/style-guide.md`
 
 ## Adding a Module

@@ -151,8 +151,11 @@ private:
    */
   constexpr UnitVector3(double x, double y, double z) noexcept : x_(x), y_(y), z_(z) {}
 
+  /// X component (guaranteed to be part of a near-unit triple with y_ and z_).
   const double x_;
+  /// Y component (guaranteed to be part of a near-unit triple with x_ and z_).
   const double y_;
+  /// Z component (guaranteed to be part of a near-unit triple with x_ and y_).
   const double z_;
 };
 

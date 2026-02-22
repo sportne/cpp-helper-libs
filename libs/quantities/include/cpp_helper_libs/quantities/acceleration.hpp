@@ -76,8 +76,10 @@ public:
   static Acceleration from_raw(double raw) noexcept;
 
 private:
+  /// Construct directly from canonical raw m/s^2.
   explicit constexpr Acceleration(double raw) noexcept : QuantityBase(raw) {}
 
+  /// Convert from a user-facing unit into canonical raw m/s^2.
   static double to_raw(double value, Unit unit);
 };
 
