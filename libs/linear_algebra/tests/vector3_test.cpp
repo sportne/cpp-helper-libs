@@ -3,10 +3,13 @@
 
 #include <gtest/gtest.h>
 
+#include <memory>
 #include <numbers>
 #include <optional>
 
-#include "cpp_helper_libs/linear_algebra/linear_algebra.hpp"
+#include "cpp_helper_libs/linear_algebra/unit_vector3.hpp"
+#include "cpp_helper_libs/linear_algebra/vector3.hpp"
+#include "cpp_helper_libs/quantities/angle.hpp"
 #include "test_helpers.hpp"
 
 // NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)

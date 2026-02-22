@@ -81,6 +81,7 @@ const double det = a.determinant(); // 37.0
 - clang-format
 - clang-tidy
 - cppcheck
+- include-what-you-use
 - gcovr
 
 ## Common Commands
@@ -124,6 +125,7 @@ cmake --build --preset build-clang-debug --target format-check
 cmake --preset clang-static-analysis
 cmake --build --preset build-clang-static-analysis
 ```
+This preset runs `clang-tidy`, `cppcheck`, and `include-what-you-use`.
 3. Test matrix:
 ```bash
 ctest --preset test-clang-debug

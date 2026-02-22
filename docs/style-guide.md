@@ -30,7 +30,7 @@
 ## Build and Analysis Policy
 
 - Treat warnings as errors on first-party targets (`CPPHL_WARNINGS_AS_ERRORS=ON`).
-- Run static analysis with `clang-tidy` and `cppcheck` using the `clang-static-analysis` preset.
+- Run static analysis with `clang-tidy`, `cppcheck`, and `include-what-you-use` using the `clang-static-analysis` preset.
 - For GNU/Clang optimized configurations, `_FORTIFY_SOURCE=2` is enabled.
 
 ## Documentation

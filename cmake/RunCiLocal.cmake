@@ -63,7 +63,7 @@ run_step("${CMAKE_COMMAND}" --build --preset build-clang-debug --parallel)
 run_step("${CMAKE_COMMAND}" --build --preset build-clang-debug --target format-check --parallel)
 run_step("${CTEST_EXECUTABLE}" --preset test-clang-debug)
 
-# 2) Static analysis build.
+# 2) Static analysis build (clang-tidy/cppcheck/include-what-you-use).
 message(STATUS "[ci-local] clang-static-analysis: configure/build")
 run_step("${CMAKE_COMMAND}" --preset clang-static-analysis)
 run_step("${CMAKE_COMMAND}" --build --preset build-clang-static-analysis --parallel)

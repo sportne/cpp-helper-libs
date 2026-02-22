@@ -26,15 +26,30 @@ function(cpphl_apply_static_analysis target_name)
     set_property(TARGET "${target_name}" PROPERTY CXX_CPPCHECK "${cppcheck_command}")
   endif()
 
+  # Attach include-what-you-use per-target so first-party translation units are
+  # checked as part of the compile pipeline.
+  if(CPPHL_ENABLE_INCLUDE_WHAT_YOU_USE)
+    find_program(CPPHL_INCLUDE_WHAT_YOU_USE_EXECUTABLE NAMES include-what-you-use iwyu REQUIRED)
+    set(iwyu_command
+      "${CPPHL_INCLUDE_WHAT_YOU_USE_EXECUTABLE}"
+      "-Xiwyu"
+      "--error"
+    )
+    set_property(TARGET "${target_name}" PROPERTY CXX_INCLUDE_WHAT_YOU_USE "${iwyu_command}")
+  endif()
+
   # Make static-analysis configuration visible in console output so users can
   # verify that analyzers are attached to each first-party target.
-  if(CPPHL_ENABLE_CLANG_TIDY OR CPPHL_ENABLE_CPPCHECK)
+  if(CPPHL_ENABLE_CLANG_TIDY OR CPPHL_ENABLE_CPPCHECK OR CPPHL_ENABLE_INCLUDE_WHAT_YOU_USE)
     message(STATUS "[static-analysis] target: ${target_name}")
     if(CPPHL_ENABLE_CLANG_TIDY)
       message(STATUS "[static-analysis]   clang-tidy: ${CPPHL_CLANG_TIDY_EXECUTABLE}")
     endif()
     if(CPPHL_ENABLE_CPPCHECK)
       message(STATUS "[static-analysis]   cppcheck: ${CPPHL_CPPCHECK_EXECUTABLE}")
+    endif()
+    if(CPPHL_ENABLE_INCLUDE_WHAT_YOU_USE)
+      message(STATUS "[static-analysis]   include-what-you-use: ${CPPHL_INCLUDE_WHAT_YOU_USE_EXECUTABLE}")
     endif()
   endif()
 endfunction()

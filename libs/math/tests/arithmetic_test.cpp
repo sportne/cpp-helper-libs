@@ -1,5 +1,7 @@
 #include <gtest/gtest.h>
 
+#include <memory>
+
 #include "cpp_helper_libs/math/arithmetic.hpp"
 
 namespace {

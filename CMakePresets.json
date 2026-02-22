@@ -22,7 +22,8 @@
         "CPPHL_ENABLE_SANITIZERS": "OFF",
         "CPPHL_ENABLE_COVERAGE": "OFF",
         "CPPHL_ENABLE_CLANG_TIDY": "OFF",
-        "CPPHL_ENABLE_CPPCHECK": "OFF"
+        "CPPHL_ENABLE_CPPCHECK": "OFF",
+        "CPPHL_ENABLE_INCLUDE_WHAT_YOU_USE": "OFF"
       }
     },
     {
@@ -51,7 +52,8 @@
         "CPPHL_ENABLE_SANITIZERS": "OFF",
         "CPPHL_ENABLE_COVERAGE": "OFF",
         "CPPHL_ENABLE_CLANG_TIDY": "OFF",
-        "CPPHL_ENABLE_CPPCHECK": "OFF"
+        "CPPHL_ENABLE_CPPCHECK": "OFF",
+        "CPPHL_ENABLE_INCLUDE_WHAT_YOU_USE": "OFF"
       }
     },
     {
@@ -70,19 +72,21 @@
         "CPPHL_ENABLE_SANITIZERS": "OFF",
         "CPPHL_ENABLE_COVERAGE": "ON",
         "CPPHL_ENABLE_CLANG_TIDY": "OFF",
-        "CPPHL_ENABLE_CPPCHECK": "OFF"
+        "CPPHL_ENABLE_CPPCHECK": "OFF",
+        "CPPHL_ENABLE_INCLUDE_WHAT_YOU_USE": "OFF"
       }
     },
     {
       "name": "clang-static-analysis",
       "displayName": "Clang Debug + Static Analysis",
-      "description": "Clang Debug configuration with clang-tidy and cppcheck enabled.",
+      "description": "Clang Debug configuration with clang-tidy, cppcheck, and include-what-you-use enabled.",
       "inherits": "clang-debug",
       "binaryDir": "${sourceDir}/build/clang-static-analysis",
       "cacheVariables": {
         "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
         "CPPHL_ENABLE_CLANG_TIDY": "ON",
-        "CPPHL_ENABLE_CPPCHECK": "ON"
+        "CPPHL_ENABLE_CPPCHECK": "ON",
+        "CPPHL_ENABLE_INCLUDE_WHAT_YOU_USE": "ON"
       }
     }
   ],
@@ -252,7 +256,7 @@
     {
       "name": "static-analysis",
       "displayName": "Static Analysis Configure/Build",
-      "description": "Configure and build with clang-tidy and cppcheck enabled.",
+      "description": "Configure and build with clang-tidy, cppcheck, and include-what-you-use enabled.",
       "steps": [
         {
           "type": "configure",

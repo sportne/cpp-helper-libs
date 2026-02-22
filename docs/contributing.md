@@ -34,6 +34,8 @@ cmake --preset clang-static-analysis
 cmake --build --preset build-clang-static-analysis
 ```
 
+The static-analysis preset runs `clang-tidy`, `cppcheck`, and `include-what-you-use`.
+
 Test matrix:
 
 ```bash
