@@ -45,3 +45,4 @@ libs/<module>/
 ## Current First-Party Modules
 
 - `math`: simple integer arithmetic helpers (`add`, `sub`)
+- `quantities`: strongly-typed measurable quantities with unit-safe conversions and comparisons

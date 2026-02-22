@@ -2,8 +2,9 @@
 
 Modular C++ helper libraries built with CMake presets and target-based project configuration.
 
-The repository currently contains one first-party module:
+The repository currently contains first-party modules:
 - `libs/math`: arithmetic helpers (`add`, `sub`)
+- `libs/quantities`: strongly-typed measurable quantities with unit conversions
 
 Each module is built as both:
 - static library target: `cpphl_<module>` (alias: `cpphl::<module>`)
@@ -33,9 +34,13 @@ make debug
 
 ```cpp
 #include "cpp_helper_libs/math/arithmetic.hpp"
+#include "cpp_helper_libs/quantities/quantities.hpp"
 
 const int sum = cpp_helper_libs::math::add(2, 3); // 5
 const int diff = cpp_helper_libs::math::sub(7, 4); // 3
+
+const auto one_mile = cpp_helper_libs::quantities::Length::miles(1.0);
+const auto meters = one_mile.in(cpp_helper_libs::quantities::Length::Unit::Meter); // 1609.344
 ```
 
 ## Repository Layout
@@ -46,6 +51,7 @@ const int diff = cpp_helper_libs::math::sub(7, 4); // 3
 ├── docs/                  # Contributor and workflow documentation
 ├── libs/                  # First-party helper library modules
 │   └── math/
+│   └── quantities/
 ├── tests/                 # Cross-module smoke/integration tests
 └── third_party/           # Vendored dependencies (GoogleTest submodule)
 ```
