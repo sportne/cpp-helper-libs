@@ -3,11 +3,17 @@
 
 #include <gtest/gtest.h>
 
+#include <memory>
 #include <numbers>
+#include <optional>
 
-#include "cpp_helper_libs/linear_algebra/linear_algebra.hpp"
+#include "cpp_helper_libs/linear_algebra/matrix3.hpp"
+#include "cpp_helper_libs/linear_algebra/unit_vector3.hpp"
+#include "cpp_helper_libs/linear_algebra/vector3.hpp"
 #include "cpp_helper_libs/math/arithmetic.hpp"
-#include "cpp_helper_libs/quantities/quantities.hpp"
+#include "cpp_helper_libs/quantities/length.hpp"
+#include "cpp_helper_libs/quantities/quantity_base.hpp"
+#include "cpp_helper_libs/quantities/time.hpp"
 
 TEST(ProjectSmokeTest, MathLibraryLinksAndExecutes) {
   EXPECT_EQ(cpp_helper_libs::math::add(1, 2), 3);

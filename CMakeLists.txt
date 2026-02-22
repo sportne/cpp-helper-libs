@@ -16,6 +16,7 @@ option(CPPHL_ENABLE_SANITIZERS "Enable sanitizer flags for Clang in Debug-like b
 option(CPPHL_ENABLE_COVERAGE "Enable coverage instrumentation for GNU builds" OFF)
 option(CPPHL_ENABLE_CLANG_TIDY "Enable clang-tidy static analysis on first-party targets" OFF)
 option(CPPHL_ENABLE_CPPCHECK "Enable cppcheck static analysis on first-party targets" OFF)
+option(CPPHL_ENABLE_INCLUDE_WHAT_YOU_USE "Enable include-what-you-use analysis on first-party targets" OFF)
 
 # Load helper modules that define reusable interface targets/functions.
 include(cmake/ProjectOptions.cmake)

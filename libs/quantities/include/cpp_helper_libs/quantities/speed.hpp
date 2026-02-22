@@ -5,7 +5,7 @@
 #define CPP_HELPER_LIBS_QUANTITIES_SPEED_HPP
 
 #include <cstddef>
-#include <functional>
+#include <string_view>
 
 #include "cpp_helper_libs/quantities/quantity_base.hpp"
 

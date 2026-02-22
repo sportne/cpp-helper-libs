@@ -3,10 +3,15 @@
 
 #include <gtest/gtest.h>
 
+#include <array>
 #include <cmath>
+#include <cstddef>
+#include <memory>
 #include <optional>
 
-#include "cpp_helper_libs/linear_algebra/linear_algebra.hpp"
+#include "cpp_helper_libs/linear_algebra/decompositions.hpp"
+#include "cpp_helper_libs/linear_algebra/matrix3.hpp"
+#include "cpp_helper_libs/linear_algebra/vector3.hpp"
 #include "test_helpers.hpp"
 
 // NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)

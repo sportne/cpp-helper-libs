@@ -7,6 +7,7 @@
 #include <cmath>
 #include <numeric>
 #include <random>
+#include <utility>
 
 // NOLINTBEGIN(cppcoreguidelines-pro-bounds-constant-array-index,cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers,bugprone-easily-swappable-parameters,readability-suspicious-call-argument)
 namespace cpp_helper_libs::linear_algebra {

@@ -6,7 +6,7 @@ help:
 	@echo "  make debug            - Configure/build/test clang-debug"
 	@echo "  make release          - Configure/build/test clang-release"
 	@echo "  make asan             - Configure/build/test clang-debug-asan-ubsan"
-	@echo "  make static-analysis  - Configure/build static-analysis preset"
+	@echo "  make static-analysis  - Configure/build static-analysis preset (clang-tidy/cppcheck/IWYU)"
 	@echo "  make format-check     - Run formatting check"
 	@echo "  make format           - Apply formatting"
 	@echo "  make coverage         - Configure/build/test coverage preset"

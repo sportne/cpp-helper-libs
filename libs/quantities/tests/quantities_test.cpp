@@ -2,11 +2,19 @@
 
 #include <cstring>
 #include <limits>
+#include <memory>
 #include <stdexcept>
 #include <type_traits>
 #include <unordered_set>
 
-#include "cpp_helper_libs/quantities/quantities.hpp"
+#include "cpp_helper_libs/quantities/acceleration.hpp"
+#include "cpp_helper_libs/quantities/angle.hpp"
+#include "cpp_helper_libs/quantities/force.hpp"
+#include "cpp_helper_libs/quantities/length.hpp"
+#include "cpp_helper_libs/quantities/mass.hpp"
+#include "cpp_helper_libs/quantities/quantity_base.hpp"
+#include "cpp_helper_libs/quantities/speed.hpp"
+#include "cpp_helper_libs/quantities/time.hpp"
 
 namespace {
 

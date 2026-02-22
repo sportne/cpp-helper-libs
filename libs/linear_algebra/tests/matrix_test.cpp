@@ -5,8 +5,9 @@
 
 #include <cmath>
 #include <optional>
+#include <vector>
 
-#include "cpp_helper_libs/linear_algebra/linear_algebra.hpp"
+#include "cpp_helper_libs/linear_algebra/matrix.hpp"
 #include "test_helpers.hpp"
 
 // NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)

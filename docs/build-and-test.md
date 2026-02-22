@@ -10,6 +10,7 @@
 - clang-format
 - clang-tidy
 - cppcheck
+- include-what-you-use
 - gcovr
 
 ## Initialize Submodules
@@ -142,7 +143,7 @@ cmake --preset clang-static-analysis
 cmake --build --preset build-clang-static-analysis
 ```
 
-This preset enables both `clang-tidy` and `cppcheck` and fails on findings.
+This preset enables `clang-tidy`, `cppcheck`, and `include-what-you-use` and fails on findings.
 
 ## Warning Policy
 
