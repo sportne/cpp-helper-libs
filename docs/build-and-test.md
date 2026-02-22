@@ -1,12 +1,40 @@
 # Build and Test
 
+## Prerequisites
+
+- CMake 3.25+
+- Ninja
+- Clang/Clang++
+- GCC/G++
+- Git
+- clang-format
+- clang-tidy
+- cppcheck
+- gcovr
+
 ## Initialize Submodules
 
 ```bash
 git submodule update --init --recursive
 ```
 
-## Configure
+GoogleTest is vendored as a git submodule under `third_party/googletest`.
+
+## Fast Path
+
+Configure, build, and test debug in one command:
+
+```bash
+cmake --workflow --preset debug
+```
+
+Equivalent shortcut:
+
+```bash
+make debug
+```
+
+## Configure (Explicit)
 
 ```bash
 cmake --preset clang-debug
@@ -24,6 +52,32 @@ cmake --build --preset build-clang-debug
 ctest --preset test-clang-debug
 ```
 
+## Build/Test Matrix
+
+Debug:
+
+```bash
+cmake --workflow --preset debug
+```
+
+Release:
+
+```bash
+cmake --workflow --preset release
+```
+
+ASan/UBSan:
+
+```bash
+cmake --workflow --preset asan
+```
+
+Coverage:
+
+```bash
+cmake --workflow --preset coverage
+```
+
 ## One-Command Local CI
 
 ```bash
@@ -36,6 +90,14 @@ Equivalent alias:
 make ci
 ```
 
+The `ci-local` target runs these gates in sequence:
+
+1. `clang-debug` configure/build + `format-check` + debug tests.
+2. `clang-static-analysis` configure/build.
+3. `clang-release` configure/build/test.
+4. `clang-debug-asan-ubsan` configure/build/test.
+5. `gcc-coverage` configure/build/test + coverage threshold check.
+
 ## Shortcut Commands
 
 You can use workflow presets directly:
@@ -44,6 +106,7 @@ You can use workflow presets directly:
 cmake --workflow --preset debug
 cmake --workflow --preset release
 cmake --workflow --preset asan
+cmake --workflow --preset coverage
 cmake --workflow --preset static-analysis
 cmake --workflow --preset format-check
 cmake --workflow --preset format
@@ -55,20 +118,13 @@ Or use `Makefile` aliases:
 make debug
 make release
 make asan
+make coverage
 make static-analysis
 make format-check
 make format
 make clean
 make clean-all
 make distclean
-```
-
-## Optional Sanitizers
-
-```bash
-cmake --preset clang-debug-asan-ubsan
-cmake --build --preset build-clang-debug-asan-ubsan
-ctest --preset test-clang-debug-asan-ubsan
 ```
 
 ## Formatting
@@ -100,6 +156,14 @@ cmake --build --preset build-clang-debug
 
 - GNU/Clang `Release`, `RelWithDebInfo`, and `MinSizeRel` builds define `_FORTIFY_SOURCE=2`.
 - Debug builds do not define `_FORTIFY_SOURCE`.
+
+## Optional Sanitizers
+
+```bash
+cmake --preset clang-debug-asan-ubsan
+cmake --build --preset build-clang-debug-asan-ubsan
+ctest --preset test-clang-debug-asan-ubsan
+```
 
 ## Coverage
 

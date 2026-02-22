@@ -3,8 +3,8 @@
 
 namespace cpp_helper_libs::math {
 
-int add(int a, int b);
-int sub(int a, int b);
+int add(int lhs, int rhs);
+int sub(int lhs, int rhs);
 
 } // namespace cpp_helper_libs::math
 

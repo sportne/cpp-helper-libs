@@ -30,6 +30,7 @@
       "displayName": "Clang Debug + ASan/UBSan",
       "description": "Clang Debug configuration with AddressSanitizer and UndefinedBehaviorSanitizer enabled.",
       "inherits": "clang-debug",
+      "binaryDir": "${sourceDir}/build/clang-debug-asan-ubsan",
       "cacheVariables": {
         "CPPHL_ENABLE_SANITIZERS": "ON"
       }
@@ -109,7 +110,8 @@
     {
       "name": "build-clang-static-analysis",
       "description": "Build first-party targets with static analysis tools active.",
-      "configurePreset": "clang-static-analysis"
+      "configurePreset": "clang-static-analysis",
+      "verbose": true
     },
     {
       "name": "build-clang-debug-format-check",

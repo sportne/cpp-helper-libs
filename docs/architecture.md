@@ -1,12 +1,47 @@
 # Architecture
 
-## Module Boundaries
-- Each helper library module lives under `libs/<module>`.
-- Module public headers live in `libs/<module>/include`.
-- Module implementations live in `libs/<module>/src`.
-- Module unit tests live in `libs/<module>/tests`.
+## Repository Topology
 
-## Dependency Rules
-- Prefer dependencies through explicit CMake targets.
-- Keep modules decoupled unless a dependency is intentional and documented.
-- Avoid cross-module include path hacks; expose required headers through target include directories.
+- First-party library code lives under `libs/`.
+- Each module is isolated under `libs/<module>/`.
+- Cross-module smoke/integration tests live under `tests/`.
+- Third-party dependencies live under `third_party/` and are not part of first-party quality metrics.
+
+## Module Structure
+
+Each module should follow this layout:
+
+```text
+libs/<module>/
+├── include/          # Public headers
+├── src/              # Private implementation
+├── tests/            # Module-local unit tests
+└── CMakeLists.txt
+```
+
+## Target Conventions
+
+- Static library target: `cpphl_<module>` (for example, `cpphl_math`).
+- Shared library target: `cpphl_<module>_shared` (for example, `cpphl_math_shared`).
+- Consumer-facing aliases: `cpphl::<module>` and `cpphl::<module>_shared`.
+- Public headers should use namespaced include paths (for example, `cpp_helper_libs/math/arithmetic.hpp`).
+
+## Dependency Model
+
+- Prefer target-based dependency wiring (`target_link_libraries`, `target_include_directories`).
+- Link shared behavior through interface targets:
+  - `cpphl_project_options`
+  - `cpphl_warnings`
+  - `cpphl_sanitizers`
+  - `cpphl_coverage`
+- Avoid global compile option mutations when a target-scoped alternative exists.
+
+## Testing Model
+
+- Module unit tests are declared in `libs/<module>/tests`.
+- Repository smoke tests are declared in `tests/`.
+- Tests are registered with CTest via `gtest_discover_tests`.
+
+## Current First-Party Modules
+
+- `math`: simple integer arithmetic helpers (`add`, `sub`)

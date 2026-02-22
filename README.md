@@ -1,130 +1,115 @@
 # cpp-helper-libs
 
-A modular C++ helper library workspace for small reusable components (math, geometry, and more), built with CMake and tuned for Clang-based workflows.
+Modular C++ helper libraries built with CMake presets and target-based project configuration.
 
-## Repository Layout
+The repository currently contains one first-party module:
+- `libs/math`: arithmetic helpers (`add`, `sub`)
 
-```text
-.
-├── AGENTS.md
-├── cmake/
-├── docs/
-├── libs/
-│   └── math/
-├── tests/
-└── third_party/
-```
-
-## Prerequisites
-- CMake 3.25+
-- Clang/Clang++
-- GCC/G++
-- Ninja (optional, but used by presets)
-- Git (for submodules)
-- clang-format, clang-tidy, cppcheck
-- gcovr (for coverage report generation)
+Each module is built as both:
+- static library target: `cpphl_<module>` (alias: `cpphl::<module>`)
+- shared library target: `cpphl_<module>_shared` (alias: `cpphl::<module>_shared`)
 
 ## Quick Start
 
-1. Initialize dependencies:
+1. Initialize submodules (required for GoogleTest):
 
 ```bash
 git submodule update --init --recursive
 ```
 
-2. Configure (Debug, Clang):
+2. Configure, build, and test debug:
 
 ```bash
-cmake --preset clang-debug
+cmake --workflow --preset debug
 ```
 
-3. Build:
+Equivalent shortcut:
 
 ```bash
-cmake --build --preset build-clang-debug
+make debug
 ```
 
-4. Run tests:
+## Public API Example
+
+```cpp
+#include "cpp_helper_libs/math/arithmetic.hpp"
+
+const int sum = cpp_helper_libs::math::add(2, 3); // 5
+const int diff = cpp_helper_libs::math::sub(7, 4); // 3
+```
+
+## Repository Layout
+
+```text
+.
+├── cmake/                 # Shared CMake modules and CI helper scripts
+├── docs/                  # Contributor and workflow documentation
+├── libs/                  # First-party helper library modules
+│   └── math/
+├── tests/                 # Cross-module smoke/integration tests
+└── third_party/           # Vendored dependencies (GoogleTest submodule)
+```
+
+## Toolchain Prerequisites
+
+- CMake 3.25+
+- Ninja
+- Clang/Clang++
+- GCC/G++
+- Git
+- clang-format
+- clang-tidy
+- cppcheck
+- gcovr
+
+## Common Commands
+
+Use CMake workflow presets directly:
 
 ```bash
-ctest --preset test-clang-debug
+cmake --workflow --preset debug
+cmake --workflow --preset release
+cmake --workflow --preset asan
+cmake --workflow --preset coverage
+cmake --workflow --preset static-analysis
+cmake --workflow --preset format-check
+cmake --workflow --preset format
+cmake --workflow --preset ci-local
+```
+
+Or use `make` wrappers:
+
+```bash
+make debug
+make release
+make asan
+make coverage
+make static-analysis
+make format-check
+make format
+make ci
 ```
 
 ## Quality Gates
 
-CI enforces the following checks on pull requests and `main` pushes:
-- Formatting check with `clang-format`.
-- Static analysis with `clang-tidy` and `cppcheck`.
-- Build and test matrix (`clang-debug`, `clang-release`, `clang-debug-asan-ubsan`).
-- Coverage gate: minimum `80%` line coverage over first-party library code under `libs/` (tests excluded).
-- Warning policy: compiler warnings are treated as errors on first-party targets (`CPPHL_WARNINGS_AS_ERRORS=ON` in presets).
+Local checks aligned with CI:
 
-## Simple Commands
-
-You can use either CMake workflow presets or the top-level `Makefile` aliases:
-
-- Debug build/test:
-  - `cmake --workflow --preset debug`
-  - `make debug`
-- Release build/test:
-  - `cmake --workflow --preset release`
-  - `make release`
-- ASan/UBSan build/test:
-  - `cmake --workflow --preset asan`
-  - `make asan`
-- Static analysis:
-  - `cmake --workflow --preset static-analysis`
-  - `make static-analysis`
-- Format check / apply:
-  - `cmake --workflow --preset format-check` / `cmake --workflow --preset format`
-  - `make format-check` / `make format`
-- Clean:
-  - `make clean` (debug tree)
-  - `make clean-all` (all preset trees)
-  - `make distclean` (remove build dirs and coverage.xml)
-
-## Compiler Policy
-
-- C++ standard: C++20 (`cpphl_project_options`).
-- Warning baseline:
-  - Clang/GCC: `-Wall -Wextra -Wpedantic -Wshadow -Wnon-virtual-dtor -Wold-style-cast -Wcast-align -Wunused -Woverloaded-virtual -Wconversion -Wsign-conversion -Wnull-dereference`.
-  - MSVC: `/W4 /permissive- /w14062` and `/RTCcsu` for Debug only.
-- Warnings as errors:
-  - Enabled by default with `CPPHL_WARNINGS_AS_ERRORS=ON`.
-  - To relax locally: `cmake --preset clang-debug -DCPPHL_WARNINGS_AS_ERRORS=OFF`.
-- Fortify:
-  - `_FORTIFY_SOURCE=2` is enabled for `Release`, `RelWithDebInfo`, and `MinSizeRel` on GNU/Clang.
-  - Debug configurations intentionally do not set `_FORTIFY_SOURCE`.
-
-### One-Command Local CI
-
+1. Formatting:
 ```bash
-cmake --workflow --preset ci-local
-```
-
-Equivalent alias:
-
-```bash
-make ci
-```
-
-### Local Formatting
-
-```bash
-cmake --preset clang-debug
 cmake --build --preset build-clang-debug --target format-check
-cmake --build --preset build-clang-debug --target format
 ```
-
-### Local Static Analysis
-
+2. Static analysis:
 ```bash
 cmake --preset clang-static-analysis
 cmake --build --preset build-clang-static-analysis
 ```
-
-### Local Coverage
-
+3. Test matrix:
+```bash
+ctest --preset test-clang-debug
+ctest --preset test-clang-release
+ctest --preset test-clang-debug-asan-ubsan
+```
+4. Coverage threshold (`>= 80%` for `libs/`, tests excluded):
 ```bash
 cmake --preset gcc-coverage
 cmake --build --preset build-gcc-coverage
@@ -132,9 +117,31 @@ ctest --preset test-gcc-coverage
 gcovr --root . --filter '^libs/' --exclude '^third_party/' --exclude '.*/tests/.*' --fail-under-line 80 --txt --xml-pretty --xml coverage.xml
 ```
 
-## Adding a New Module
+Single command parity with CI:
+
+```bash
+cmake --workflow --preset ci-local
+```
+
+## Build Policy
+
+- Language level: C++20
+- Warning policy: first-party targets build with warnings-as-errors by default (`CPPHL_WARNINGS_AS_ERRORS=ON`)
+- Fortify policy: `_FORTIFY_SOURCE=2` for GNU/Clang `Release`, `RelWithDebInfo`, and `MinSizeRel`
+- Sanitizer policy: ASan/UBSan enabled only in sanitizer preset (`clang-debug-asan-ubsan`)
+
+## Documentation
+
+- `docs/README.md`
+- `docs/build-and-test.md`
+- `docs/architecture.md`
+- `docs/contributing.md`
+- `docs/style-guide.md`
+
+## Adding a Module
+
 1. Create `libs/<module>/include`, `libs/<module>/src`, and `libs/<module>/tests`.
-2. Add a `libs/<module>/CMakeLists.txt` with a library target and alias (`cpphl::<module>`).
+2. Define both static/shared targets (`cpphl_<module>`, `cpphl_<module>_shared`) and aliases (`cpphl::<module>`, `cpphl::<module>_shared`).
 3. Register the module in `libs/CMakeLists.txt`.
-4. Add unit tests with `gtest_discover_tests(...)`.
-5. Update `docs/architecture.md` and related documentation.
+4. Add unit tests and register them with `gtest_discover_tests`.
+5. Update `README.md` and relevant files under `docs/`.

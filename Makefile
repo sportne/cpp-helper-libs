@@ -1,5 +1,5 @@
 .PHONY: help debug release asan coverage static-analysis format format-check ci \
-        configure build test clean clean-debug clean-release clean-coverage clean-all distclean
+        configure build test clean clean-debug clean-release clean-asan clean-coverage clean-static-analysis clean-all distclean
 
 help:
 	@echo "Common commands:"
@@ -12,7 +12,7 @@ help:
 	@echo "  make coverage         - Configure/build/test coverage preset"
 	@echo "  make ci               - Run full local CI target"
 	@echo "  make clean            - Clean clang-debug build tree"
-	@echo "  make clean-all        - Clean all preset build trees"
+	@echo "  make clean-all        - Clean debug/release/asan/coverage/static-analysis build trees"
 	@echo "  make distclean        - Remove build directories and coverage outputs"
 
 debug:
@@ -58,11 +58,19 @@ clean-release:
 	cmake --preset clang-release
 	cmake --build --preset build-clang-release --target clean
 
+clean-asan:
+	cmake --preset clang-debug-asan-ubsan
+	cmake --build --preset build-clang-debug-asan-ubsan --target clean
+
 clean-coverage:
 	cmake --preset gcc-coverage
 	cmake --build --preset build-gcc-coverage --target clean
 
-clean-all: clean-debug clean-release clean-coverage
+clean-static-analysis:
+	cmake --preset clang-static-analysis
+	cmake --build --preset build-clang-static-analysis --target clean
+
+clean-all: clean-debug clean-release clean-asan clean-coverage clean-static-analysis
 
 distclean:
 	cmake -E rm -rf build

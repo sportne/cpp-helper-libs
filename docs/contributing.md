@@ -1,18 +1,65 @@
 # Contributing
 
 ## Expectations
-- Keep changes scoped and module-focused.
-- Add or update tests for behavior changes.
-- Update docs in `docs/` and `README.md` for visible workflow/API changes.
-- Ensure CI quality gates pass: format check, static analysis, test matrix, and coverage threshold.
-- Keep warning-clean code: first-party targets are built with warnings-as-errors by default.
 
-## Typical Change Flow
-1. Create/update code in the relevant `libs/<module>` area.
-2. Add/update tests in `libs/<module>/tests` and/or `tests/`.
-3. Configure and build using CMake presets (or shortcut commands like `make debug`).
-4. Run format and static analysis checks.
-5. Run tests with CTest.
-6. Validate coverage for library code (`>= 80%` line coverage).
-7. If needed during local iteration, temporarily disable `CPPHL_WARNINGS_AS_ERRORS`; re-enable before final validation.
-8. Open a PR with a summary of behavior and tests.
+- Keep changes scoped and module-focused.
+- Place new functionality under `libs/<module>`.
+- Add or update tests for behavior changes and new public APIs.
+- Update `README.md` and files in `docs/` when behavior, modules, or workflows change.
+- Keep CMake target-based and avoid global compile flag mutations when possible.
+- Keep warning-clean code; first-party targets use warnings-as-errors by default.
+
+## Standard Change Flow
+
+1. Implement code in the target module under `libs/<module>`.
+2. Update public headers (`include/`) and implementation files (`src/`) as needed.
+3. Add or update module unit tests in `libs/<module>/tests`.
+4. Add or update smoke/integration tests in `tests/` when cross-module behavior changes.
+5. Run quality gates locally.
+6. Update docs and README for externally visible changes.
+7. Open a PR with a focused summary and test evidence.
+
+## Local Quality Gates
+
+Formatting:
+
+```bash
+cmake --build --preset build-clang-debug --target format-check
+```
+
+Static analysis:
+
+```bash
+cmake --preset clang-static-analysis
+cmake --build --preset build-clang-static-analysis
+```
+
+Test matrix:
+
+```bash
+ctest --preset test-clang-debug
+ctest --preset test-clang-release
+ctest --preset test-clang-debug-asan-ubsan
+```
+
+Coverage:
+
+```bash
+cmake --preset gcc-coverage
+cmake --build --preset build-gcc-coverage
+ctest --preset test-gcc-coverage
+gcovr --root . --filter '^libs/' --exclude '^third_party/' --exclude '.*/tests/.*' --fail-under-line 80 --txt --xml-pretty --xml coverage.xml
+```
+
+Single command CI parity:
+
+```bash
+cmake --workflow --preset ci-local
+```
+
+## Pull Request Checklist
+
+- Scope is module-focused and avoids unrelated refactors.
+- New/changed behavior has tests.
+- Docs are updated where needed.
+- Local CI-equivalent checks pass.
