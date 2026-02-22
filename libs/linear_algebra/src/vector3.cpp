@@ -66,21 +66,24 @@ std::optional<double> Vector3::central_angle_radians(const Vector3 &other) const
   return std::acos(clamped_cosine);
 }
 
-std::optional<cpp_helper_libs::quantities::Angle> Vector3::central_angle(const Vector3 &other) const
-    noexcept {
+std::optional<cpp_helper_libs::quantities::Angle>
+Vector3::central_angle(const Vector3 &other) const noexcept {
   const std::optional<double> radians = central_angle_radians(other);
   if (!radians.has_value()) {
     return std::nullopt;
   }
 
+  // Preserve the optional degenerate-state contract when lifting to Angle.
   return cpp_helper_libs::quantities::Angle::radians(radians.value());
 }
 
 std::optional<UnitVector3> unit_tangent(const Vector3 &direction) noexcept {
+  // Tangent is the normalized direction vector.
   return direction.normalized();
 }
 
 std::optional<UnitVector3> unit_normal(const Vector3 &first, const Vector3 &second) noexcept {
+  // Normal is perpendicular to the input plane via right-handed cross product.
   return first.cross(second).normalized();
 }
 

@@ -8,10 +8,10 @@
 
 namespace {
 
-using cpp_helper_libs::linear_algebra::UnitVector3;
-using cpp_helper_libs::linear_algebra::Vector3;
 using cpp_helper_libs::linear_algebra::unit_normal;
 using cpp_helper_libs::linear_algebra::unit_tangent;
+using cpp_helper_libs::linear_algebra::UnitVector3;
+using cpp_helper_libs::linear_algebra::Vector3;
 
 template <typename T> T require_value(const std::optional<T> &candidate) {
   if (!candidate.has_value()) {
@@ -144,9 +144,8 @@ TEST(UnitVector3CentralAngleTest, ReturnsExpectedAngles) {
   EXPECT_NEAR(x_axis.central_angle_radians(x_axis), 0.0, kTolerance);
   EXPECT_NEAR(x_axis.central_angle_radians(y_axis), kPi / 2.0, kTolerance);
   EXPECT_NEAR(x_axis.central_angle_radians(negative_x), kPi, kTolerance);
-  EXPECT_NEAR(
-      x_axis.central_angle(y_axis).in(cpp_helper_libs::quantities::Angle::Unit::Radian),
-      kPi / 2.0, kTolerance);
+  EXPECT_NEAR(x_axis.central_angle(y_axis).in(cpp_helper_libs::quantities::Angle::Unit::Radian),
+              kPi / 2.0, kTolerance);
 }
 
 TEST(UnitDirectionHelpersTest, ComputesUnitTangentAndUnitNormal) {
@@ -157,7 +156,8 @@ TEST(UnitDirectionHelpersTest, ComputesUnitTangentAndUnitNormal) {
   EXPECT_NEAR(tangent.y(), 0.6, kTolerance);
   EXPECT_NEAR(tangent.z(), 0.8, kTolerance);
 
-  const UnitVector3 normal = require_value(unit_normal(Vector3(1.0, 0.0, 0.0), Vector3(0.0, 1.0, 0.0)));
+  const UnitVector3 normal =
+      require_value(unit_normal(Vector3(1.0, 0.0, 0.0), Vector3(0.0, 1.0, 0.0)));
   EXPECT_NEAR(normal.x(), 0.0, kTolerance);
   EXPECT_NEAR(normal.y(), 0.0, kTolerance);
   EXPECT_NEAR(normal.z(), 1.0, kTolerance);

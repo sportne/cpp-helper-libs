@@ -9,6 +9,7 @@
 namespace cpp_helper_libs::linear_algebra {
 namespace {
 
+// Unit-magnitude check tolerance for floating-point roundoff.
 constexpr double kUnitLength = 1.0;
 constexpr double kUnitLengthTolerance = 1e-12;
 
@@ -79,8 +80,9 @@ double UnitVector3::central_angle_radians(const UnitVector3 &other) const noexce
   return std::acos(clamped_cosine);
 }
 
-cpp_helper_libs::quantities::Angle UnitVector3::central_angle(const UnitVector3 &other) const
-    noexcept {
+cpp_helper_libs::quantities::Angle
+UnitVector3::central_angle(const UnitVector3 &other) const noexcept {
+  // Keep Angle-returning API behavior consistent with radians-returning API.
   return cpp_helper_libs::quantities::Angle::radians(central_angle_radians(other));
 }
 
