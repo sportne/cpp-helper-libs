@@ -39,6 +39,11 @@ TEST(ForceTest, SupportsAllFactoriesAndUnitConversions) {
               kTolerance);
 }
 
+TEST(ForceTest, SupportsRawFactory) {
+  const Force value = Force::from_raw(123.0);
+  EXPECT_DOUBLE_EQ(value.in(Force::Unit::Newton), 123.0);
+}
+
 TEST(ForceTest, HashSpecializationIsUsable) {
   constexpr std::size_t kExpectedSingleEntry = 1U;
 

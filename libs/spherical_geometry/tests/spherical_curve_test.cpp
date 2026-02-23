@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <memory>
 #include <numbers>
 #include <optional>
 #include <stdexcept>
@@ -135,6 +136,79 @@ TEST(SphericalCurveTest, SupportsAllCurvePairings) {
       EXPECT_EQ(forward_hits.size(), reverse_hits.size());
     }
   }
+}
+
+TEST(SphericalCurveTest, DetectsInteriorPointIntersectionsWithExactPolicy) {
+  constexpr double kTolerance = 1e-12;
+
+  const UnitVector3 endpoint_west =
+      require_value(UnitVector3::from_components(std::sqrt(0.5), -std::sqrt(0.5), 0.0));
+  const UnitVector3 endpoint_east =
+      require_value(UnitVector3::from_components(std::sqrt(0.5), std::sqrt(0.5), 0.0));
+  const UnitVector3 endpoint_north =
+      require_value(UnitVector3::from_components(std::sqrt(0.5), 0.0, std::sqrt(0.5)));
+  const UnitVector3 endpoint_south =
+      require_value(UnitVector3::from_components(std::sqrt(0.5), 0.0, -std::sqrt(0.5)));
+
+  const MinorArc equator_span =
+      require_value(MinorArc::from_endpoints(endpoint_west, endpoint_east));
+  const MinorArc meridian_span =
+      require_value(MinorArc::from_endpoints(endpoint_north, endpoint_south));
+
+  const std::vector<cpp_helper_libs::spherical_geometry::CurveIntersection> tolerant_hits =
+      equator_span.intersections_with(meridian_span);
+  const std::vector<cpp_helper_libs::spherical_geometry::CurveIntersection> exact_hits =
+      equator_span.intersections_with_exact(meridian_span);
+
+  ASSERT_EQ(tolerant_hits.size(), 1U);
+  EXPECT_EQ(tolerant_hits.front().kind(), CurveIntersectionKind::Point);
+  EXPECT_NEAR(tolerant_hits.front().first_point().x(), 1.0, kTolerance);
+  EXPECT_NEAR(tolerant_hits.front().first_point().y(), 0.0, kTolerance);
+  EXPECT_NEAR(tolerant_hits.front().first_point().z(), 0.0, kTolerance);
+
+  ASSERT_EQ(exact_hits.size(), 1U);
+  EXPECT_EQ(exact_hits.front().kind(), CurveIntersectionKind::Point);
+}
+
+TEST(SphericalCurveTest, HandlesZeroLengthNoIntersectionCases) {
+  const UnitVector3 x_axis = require_value(UnitVector3::from_components(1.0, 0.0, 0.0));
+  const UnitVector3 y_axis = require_value(UnitVector3::from_components(0.0, 1.0, 0.0));
+  const UnitVector3 z_axis = require_value(UnitVector3::from_components(0.0, 0.0, 1.0));
+
+  const ZeroLengthCurve zero_x = require_value(ZeroLengthCurve::at_radial(x_axis));
+  const ZeroLengthCurve zero_y = require_value(ZeroLengthCurve::at_radial(y_axis));
+  EXPECT_TRUE(zero_x.intersections_with(zero_y).empty());
+  EXPECT_TRUE(zero_x.intersections_with_exact(zero_y).empty());
+
+  const MinorArc equator_quadrant = require_value(MinorArc::from_endpoints(x_axis, y_axis));
+  const ZeroLengthCurve north_pole = require_value(ZeroLengthCurve::at_radial(z_axis));
+
+  EXPECT_TRUE(north_pole.intersections_with(equator_quadrant).empty());
+  EXPECT_TRUE(north_pole.intersections_with_exact(equator_quadrant).empty());
+  EXPECT_TRUE(equator_quadrant.intersections_with(north_pole).empty());
+}
+
+TEST(SphericalCurveTest, DetectsEndpointTouchAcrossDifferentSupports) {
+  const UnitVector3 x_axis = require_value(UnitVector3::from_components(1.0, 0.0, 0.0));
+  const UnitVector3 y_axis = require_value(UnitVector3::from_components(0.0, 1.0, 0.0));
+  const UnitVector3 z_axis = require_value(UnitVector3::from_components(0.0, 0.0, 1.0));
+
+  const MinorArc first = require_value(MinorArc::from_endpoints(x_axis, y_axis));
+  const MinorArc second = require_value(MinorArc::from_endpoints(y_axis, z_axis));
+
+  const std::vector<cpp_helper_libs::spherical_geometry::CurveIntersection> hits =
+      first.intersections_with(second);
+  ASSERT_EQ(hits.size(), 1U);
+  EXPECT_EQ(hits.front().kind(), CurveIntersectionKind::EndpointTouch);
+}
+
+TEST(SphericalCurveTest, SupportsPolymorphicCurveDeletion) {
+  const UnitVector3 x_axis = require_value(UnitVector3::from_components(1.0, 0.0, 0.0));
+  const UnitVector3 y_axis = require_value(UnitVector3::from_components(0.0, 1.0, 0.0));
+  const MinorArc arc = require_value(MinorArc::from_endpoints(x_axis, y_axis));
+
+  const std::unique_ptr<SphericalCurve> curve = std::make_unique<MinorArc>(arc);
+  EXPECT_GT(curve->length().in(Angle::Unit::Radian), 0.0);
 }
 
 } // namespace

@@ -6,9 +6,13 @@ add_executable(cpphl_spherical_geometry_tests)
 target_sources(cpphl_spherical_geometry_tests
   PRIVATE
     coordinate_test.cpp
+    intersection_test.cpp
+    arc_factory_test.cpp
+    spherical_internal_test.cpp
     spherical_ray_test.cpp
     spherical_curve_test.cpp
     spherical_shape_test.cpp
+    zero_length_curve_test.cpp
 )
 
 # Link module under test plus gtest main().

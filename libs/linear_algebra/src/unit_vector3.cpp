@@ -19,6 +19,10 @@ constexpr double kUnitLengthTolerance = 1e-12;
 std::optional<UnitVector3> UnitVector3::from_components(const double x_component,
                                                         const double y_component,
                                                         const double z_component) noexcept {
+  if (!std::isfinite(x_component) || !std::isfinite(y_component) || !std::isfinite(z_component)) {
+    return std::nullopt;
+  }
+
   const double magnitude = std::sqrt((x_component * x_component) + (y_component * y_component) +
                                      (z_component * z_component));
 

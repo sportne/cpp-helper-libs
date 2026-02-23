@@ -48,6 +48,11 @@ TEST(AccelerationTest, SupportsAllFactoriesAndUnitConversions) {
               kOneMeterPerSecondSquared, kTolerance);
 }
 
+TEST(AccelerationTest, SupportsRawFactory) {
+  const Acceleration value = Acceleration::from_raw(9.80665);
+  EXPECT_DOUBLE_EQ(value.in(Acceleration::Unit::MetersPerSecondSquared), 9.80665);
+}
+
 TEST(AccelerationTest, HashSpecializationIsUsable) {
   constexpr std::size_t kExpectedSingleEntry = 1U;
 

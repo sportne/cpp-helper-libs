@@ -48,6 +48,11 @@ TEST(MassTest, SupportsAllFactoriesAndUnitConversions) {
   EXPECT_NEAR(Mass::pounds(kPoundsPerKilogram).in(Mass::Unit::Kilogram), kOneKilogram, kTolerance);
 }
 
+TEST(MassTest, SupportsRawFactory) {
+  const Mass value = Mass::from_raw(42.0);
+  EXPECT_DOUBLE_EQ(value.in(Mass::Unit::Kilogram), 42.0);
+}
+
 TEST(MassTest, HashSpecializationIsUsable) {
   constexpr std::size_t kExpectedSingleEntry = 1U;
 

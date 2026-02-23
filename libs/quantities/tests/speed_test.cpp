@@ -51,6 +51,11 @@ TEST(SpeedTest, SupportsAllFactoriesAndUnitConversions) {
       kOneMeterPerSecond, kTolerance);
 }
 
+TEST(SpeedTest, SupportsRawFactory) {
+  const Speed value = Speed::from_raw(12.5);
+  EXPECT_DOUBLE_EQ(value.in(Speed::Unit::MetersPerSecond), 12.5);
+}
+
 TEST(SpeedTest, HashSpecializationIsUsable) {
   constexpr std::size_t kExpectedSingleEntry = 1U;
 

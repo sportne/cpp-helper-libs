@@ -3,6 +3,7 @@
 
 #include <gtest/gtest.h>
 
+#include <limits>
 #include <memory>
 #include <numbers>
 #include <optional>
@@ -22,9 +23,12 @@ using cpp_helper_libs::linear_algebra::test::require_value;
 TEST(UnitVector3FactoryTest, ValidatesUnitLengthInvariant) {
   const std::optional<UnitVector3> valid = UnitVector3::from_components(1.0, 0.0, 0.0);
   const std::optional<UnitVector3> invalid = UnitVector3::from_components(1.0 + 1e-9, 0.0, 0.0);
+  const double nan = std::numeric_limits<double>::quiet_NaN();
+  const std::optional<UnitVector3> non_finite = UnitVector3::from_components(nan, 0.0, 0.0);
 
   EXPECT_TRUE(valid.has_value());
   EXPECT_FALSE(invalid.has_value());
+  EXPECT_FALSE(non_finite.has_value());
 }
 
 TEST(UnitVector3FactoryTest, CreatesFromNonZeroVector) {
@@ -47,6 +51,7 @@ TEST(UnitVector3Test, SupportsVectorOperations) {
   EXPECT_DOUBLE_EQ(x_axis.dot(y_axis), 0.0);
   EXPECT_EQ(x_axis.cross(y_axis), Vector3(0.0, 0.0, 1.0));
   EXPECT_EQ(-x_axis, require_value(UnitVector3::from_components(-1.0, 0.0, 0.0)));
+  EXPECT_TRUE(x_axis != y_axis);
 }
 
 TEST(UnitVector3CentralAngleTest, ReturnsExpectedAngles) {
