@@ -60,6 +60,21 @@ subtract3(const std::array<double, kDimension> &left_values,
           left_values[2] - right_values[2]};
 }
 
+bool should_try_cholesky(const std::array<double, kMatrixEntryCount> &values) noexcept {
+  // Cholesky requires a symmetric matrix with positive diagonal entries.
+  if (values[0] <= kNearZeroTolerance || values[4] <= kNearZeroTolerance ||
+      values[8] <= kNearZeroTolerance) {
+    return false;
+  }
+
+  return std::fabs(values[linear_index(0U, 1U)] - values[linear_index(1U, 0U)]) <=
+             kNearZeroTolerance &&
+         std::fabs(values[linear_index(0U, 2U)] - values[linear_index(2U, 0U)]) <=
+             kNearZeroTolerance &&
+         std::fabs(values[linear_index(1U, 2U)] - values[linear_index(2U, 1U)]) <=
+             kNearZeroTolerance;
+}
+
 std::optional<std::array<double, kDimension>>
 forward_substitute(const std::array<double, kMatrixEntryCount> &lower_values,
                    const std::array<double, kDimension> &right_hand_side) noexcept {
@@ -402,12 +417,14 @@ std::optional<Vector3> Matrix3::solve(const Vector3 &right_hand_side,
     // 1) Try Cholesky first (fast/stable when matrix is symmetric positive-definite).
     // 2) Fallback to LU with partial pivoting for general non-singular matrices.
     // 3) Fallback to QR as a robust final path.
-    const std::optional<Cholesky3> cholesky_decomposition = cholesky();
-    if (cholesky_decomposition.has_value()) {
-      const std::optional<Vector3> cholesky_solution =
-          solve_cholesky_system(cholesky_decomposition.value(), right_hand_side);
-      if (cholesky_solution.has_value()) {
-        return cholesky_solution;
+    if (should_try_cholesky(values_)) {
+      const std::optional<Cholesky3> cholesky_decomposition = cholesky();
+      if (cholesky_decomposition.has_value()) {
+        const std::optional<Vector3> cholesky_solution =
+            solve_cholesky_system(cholesky_decomposition.value(), right_hand_side);
+        if (cholesky_solution.has_value()) {
+          return cholesky_solution;
+        }
       }
     }
 

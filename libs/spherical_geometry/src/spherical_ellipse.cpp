@@ -7,9 +7,9 @@
 #include <cmath>
 #include <limits>
 #include <numbers>
+#include <vector>
 
 #include "cpp_helper_libs/linear_algebra/vector3.hpp"
-#include "cpp_helper_libs/spherical_geometry/intersection.hpp"
 #include "spherical_internal.hpp"
 
 namespace cpp_helper_libs::spherical_geometry {
@@ -44,6 +44,13 @@ struct RootBracket final {
   double upper;
 };
 
+struct BracketResiduals final {
+  // Residual at RootBracket::lower.
+  double lower;
+  // Residual at RootBracket::upper.
+  double upper;
+};
+
 struct BoundaryDiscretization final {
   // Target sum of distances to the two foci for boundary points.
   double boundary_sum_radians;
@@ -51,18 +58,15 @@ struct BoundaryDiscretization final {
   std::size_t segment_count;
 };
 
-// Convert local spherical coordinates (polar angle + azimuth around an axis basis)
+// Convert local spherical coordinates (polar angle + precomputed azimuth direction)
 // into a unit radial on the sphere.
-// Assumption: axis/basis_first/basis_second form an orthonormal frame.
+// Assumption: axis and azimuth_direction form a valid local frame direction.
 cpp_helper_libs::linear_algebra::UnitVector3
-point_on_basis(const cpp_helper_libs::linear_algebra::UnitVector3 &axis,
-               const cpp_helper_libs::linear_algebra::UnitVector3 &basis_first,
-               const cpp_helper_libs::linear_algebra::UnitVector3 &basis_second,
-               const double polar_angle, const double azimuth) {
-  const cpp_helper_libs::linear_algebra::Vector3 direction =
-      (basis_first.scaled_by(std::cos(azimuth)) + basis_second.scaled_by(std::sin(azimuth)));
+point_on_basis_with_direction(const cpp_helper_libs::linear_algebra::UnitVector3 &axis,
+                              const cpp_helper_libs::linear_algebra::Vector3 &azimuth_direction,
+                              const double polar_angle) {
   const cpp_helper_libs::linear_algebra::Vector3 point =
-      axis.scaled_by(std::cos(polar_angle)) + direction * std::sin(polar_angle);
+      axis.scaled_by(std::cos(polar_angle)) + azimuth_direction * std::sin(polar_angle);
 
   const std::optional<cpp_helper_libs::linear_algebra::UnitVector3> point_unit =
       cpp_helper_libs::linear_algebra::UnitVector3::from_vector(point);
@@ -79,6 +83,13 @@ point_on_basis(const cpp_helper_libs::linear_algebra::UnitVector3 &axis,
   return axis;
 }
 
+cpp_helper_libs::linear_algebra::Vector3
+azimuth_direction(const cpp_helper_libs::linear_algebra::UnitVector3 &basis_first,
+                  const cpp_helper_libs::linear_algebra::UnitVector3 &basis_second,
+                  const double azimuth) {
+  return basis_first.scaled_by(std::cos(azimuth)) + basis_second.scaled_by(std::sin(azimuth));
+}
+
 // Residual function for the ellipse boundary equation:
 // angle(focus_one, point) + angle(focus_two, point) - boundary_sum = 0.
 double boundary_residual(const cpp_helper_libs::linear_algebra::UnitVector3 &focus_one,
@@ -89,25 +100,29 @@ double boundary_residual(const cpp_helper_libs::linear_algebra::UnitVector3 &foc
          boundary_sum_radians;
 }
 
+double boundary_residual_for_polar(const cpp_helper_libs::linear_algebra::UnitVector3 &focus_one,
+                                   const cpp_helper_libs::linear_algebra::UnitVector3 &focus_two,
+                                   const cpp_helper_libs::linear_algebra::UnitVector3 &axis,
+                                   const cpp_helper_libs::linear_algebra::Vector3 &direction,
+                                   const double polar_angle, const double boundary_sum_radians) {
+  return boundary_residual(focus_one, focus_two,
+                           point_on_basis_with_direction(axis, direction, polar_angle),
+                           boundary_sum_radians);
+}
+
 // Solve one boundary root inside a bracket where the residual changes sign.
 // Algorithm: bisection with fixed iteration cap and residual tolerance.
 std::optional<double>
 root_from_sign_change(const cpp_helper_libs::linear_algebra::UnitVector3 &focus_one,
                       const cpp_helper_libs::linear_algebra::UnitVector3 &focus_two,
                       const cpp_helper_libs::linear_algebra::UnitVector3 &axis,
-                      const cpp_helper_libs::linear_algebra::UnitVector3 &basis_first,
-                      const cpp_helper_libs::linear_algebra::UnitVector3 &basis_second,
-                      const double azimuth, const double boundary_sum_radians,
-                      const RootBracket bracket) {
+                      const cpp_helper_libs::linear_algebra::Vector3 &direction,
+                      const double boundary_sum_radians, const RootBracket bracket,
+                      const BracketResiduals bracket_residuals) {
   double lower = bracket.lower;
   double upper = bracket.upper;
-
-  double residual_lower = boundary_residual(
-      focus_one, focus_two, point_on_basis(axis, basis_first, basis_second, lower, azimuth),
-      boundary_sum_radians);
-  const double residual_upper = boundary_residual(
-      focus_one, focus_two, point_on_basis(axis, basis_first, basis_second, upper, azimuth),
-      boundary_sum_radians);
+  double residual_lower = bracket_residuals.lower;
+  const double residual_upper = bracket_residuals.upper;
 
   if (residual_lower == 0.0) {
     return lower;
@@ -122,9 +137,8 @@ root_from_sign_change(const cpp_helper_libs::linear_algebra::UnitVector3 &focus_
 
   for (std::size_t iteration = 0U; iteration < kBisectIterationLimit; ++iteration) {
     const double midpoint = kHalf * (lower + upper);
-    const double residual_midpoint = boundary_residual(
-        focus_one, focus_two, point_on_basis(axis, basis_first, basis_second, midpoint, azimuth),
-        boundary_sum_radians);
+    const double residual_midpoint = boundary_residual_for_polar(
+        focus_one, focus_two, axis, direction, midpoint, boundary_sum_radians);
 
     if (std::fabs(residual_midpoint) < kBisectResidualTolerance) {
       return midpoint;
@@ -141,6 +155,76 @@ root_from_sign_change(const cpp_helper_libs::linear_algebra::UnitVector3 &focus_
   return kHalf * (lower + upper);
 }
 
+// Fast local solve near previous sample to preserve continuity while avoiding full scans.
+std::optional<double> solve_polar_angle_near_previous(
+    const cpp_helper_libs::linear_algebra::UnitVector3 &focus_one,
+    const cpp_helper_libs::linear_algebra::UnitVector3 &focus_two,
+    const cpp_helper_libs::linear_algebra::UnitVector3 &axis, const double previous_polar_angle,
+    const cpp_helper_libs::linear_algebra::Vector3 &direction, const double boundary_sum_radians) {
+  const double delta_step = kPi / static_cast<double>(kBoundarySearchResolution);
+  const double center = std::clamp(previous_polar_angle, 0.0, kPi);
+  const double residual_center = boundary_residual_for_polar(focus_one, focus_two, axis, direction,
+                                                             center, boundary_sum_radians);
+
+  double best_delta = center;
+  double best_abs_residual = std::fabs(residual_center);
+  if (best_abs_residual <= kBoundaryApproximateResidualTolerance) {
+    return center;
+  }
+
+  for (std::size_t expansion = 1U; expansion <= kBoundarySearchResolution; expansion *= 2U) {
+    const double span = delta_step * static_cast<double>(expansion);
+    const double lower = std::max(0.0, center - span);
+    const double upper = std::min(kPi, center + span);
+    const double residual_lower = boundary_residual_for_polar(focus_one, focus_two, axis, direction,
+                                                              lower, boundary_sum_radians);
+    const double residual_upper = boundary_residual_for_polar(focus_one, focus_two, axis, direction,
+                                                              upper, boundary_sum_radians);
+
+    const double lower_abs_residual = std::fabs(residual_lower);
+    if (lower_abs_residual < best_abs_residual) {
+      best_abs_residual = lower_abs_residual;
+      best_delta = lower;
+    }
+    const double upper_abs_residual = std::fabs(residual_upper);
+    if (upper_abs_residual < best_abs_residual) {
+      best_abs_residual = upper_abs_residual;
+      best_delta = upper;
+    }
+
+    if (lower < center && ((residual_lower == 0.0) || (residual_center == 0.0) ||
+                           ((residual_lower < 0.0) != (residual_center < 0.0)))) {
+      return root_from_sign_change(focus_one, focus_two, axis, direction, boundary_sum_radians,
+                                   RootBracket{lower, center},
+                                   BracketResiduals{residual_lower, residual_center});
+    }
+
+    if (center < upper && ((residual_center == 0.0) || (residual_upper == 0.0) ||
+                           ((residual_center < 0.0) != (residual_upper < 0.0)))) {
+      return root_from_sign_change(focus_one, focus_two, axis, direction, boundary_sum_radians,
+                                   RootBracket{center, upper},
+                                   BracketResiduals{residual_center, residual_upper});
+    }
+
+    if (lower < upper && ((residual_lower == 0.0) || (residual_upper == 0.0) ||
+                          ((residual_lower < 0.0) != (residual_upper < 0.0)))) {
+      return root_from_sign_change(focus_one, focus_two, axis, direction, boundary_sum_radians,
+                                   RootBracket{lower, upper},
+                                   BracketResiduals{residual_lower, residual_upper});
+    }
+
+    if ((lower == 0.0) && (upper == kPi)) {
+      break;
+    }
+  }
+
+  if (best_abs_residual <= kBoundaryApproximateResidualTolerance) {
+    return best_delta;
+  }
+
+  return std::nullopt;
+}
+
 // For one azimuth, find the polar angle that satisfies the ellipse boundary equation.
 // Algorithm:
 // 1) Coarse scan for sign changes and near-best residual.
@@ -151,45 +235,54 @@ std::optional<double>
 solve_polar_angle_for_azimuth(const cpp_helper_libs::linear_algebra::UnitVector3 &focus_one,
                               const cpp_helper_libs::linear_algebra::UnitVector3 &focus_two,
                               const cpp_helper_libs::linear_algebra::UnitVector3 &axis,
-                              const cpp_helper_libs::linear_algebra::UnitVector3 &basis_first,
-                              const cpp_helper_libs::linear_algebra::UnitVector3 &basis_second,
-                              const double azimuth, const double boundary_sum_radians,
+                              const cpp_helper_libs::linear_algebra::Vector3 &direction,
+                              const double boundary_sum_radians,
                               const std::optional<double> previous_polar_angle) {
+  if (previous_polar_angle.has_value()) {
+    const std::optional<double> local_root = solve_polar_angle_near_previous(
+        focus_one, focus_two, axis, previous_polar_angle.value(), direction, boundary_sum_radians);
+    if (local_root.has_value()) {
+      return local_root;
+    }
+  }
+
+  const double delta_step = kPi / static_cast<double>(kBoundarySearchResolution);
   double best_delta = 0.0;
   double best_abs_residual = std::numeric_limits<double>::infinity();
 
   std::vector<double> roots;
   roots.reserve(4U);
 
-  double previous_residual = 0.0;
-  bool have_previous_residual = false;
-  for (std::size_t index = 0U; index <= kBoundarySearchResolution; ++index) {
-    const double delta =
-        kPi * static_cast<double>(index) / static_cast<double>(kBoundarySearchResolution);
-    const double residual = boundary_residual(
-        focus_one, focus_two, point_on_basis(axis, basis_first, basis_second, delta, azimuth),
-        boundary_sum_radians);
+  double previous_residual =
+      boundary_residual_for_polar(focus_one, focus_two, axis, direction, 0.0, boundary_sum_radians);
+  const double initial_abs_residual = std::fabs(previous_residual);
+  if (initial_abs_residual < best_abs_residual) {
+    best_abs_residual = initial_abs_residual;
+    best_delta = 0.0;
+  }
+
+  for (std::size_t index = 1U; index <= kBoundarySearchResolution; ++index) {
+    const double delta = delta_step * static_cast<double>(index);
+    const double residual = boundary_residual_for_polar(focus_one, focus_two, axis, direction,
+                                                        delta, boundary_sum_radians);
     const double abs_residual = std::fabs(residual);
     if (abs_residual < best_abs_residual) {
       best_abs_residual = abs_residual;
       best_delta = delta;
     }
 
-    if (have_previous_residual && ((previous_residual == 0.0) || (residual == 0.0) ||
-                                   ((previous_residual < 0.0) != (residual < 0.0)))) {
-      const double delta_lower =
-          kPi * static_cast<double>(index - 1U) / static_cast<double>(kBoundarySearchResolution);
-      const double delta_upper = delta;
-      const std::optional<double> root =
-          root_from_sign_change(focus_one, focus_two, axis, basis_first, basis_second, azimuth,
-                                boundary_sum_radians, RootBracket{delta_lower, delta_upper});
+    if ((previous_residual == 0.0) || (residual == 0.0) ||
+        ((previous_residual < 0.0) != (residual < 0.0))) {
+      const double delta_lower = delta - delta_step;
+      const std::optional<double> root = root_from_sign_change(
+          focus_one, focus_two, axis, direction, boundary_sum_radians,
+          RootBracket{delta_lower, delta}, BracketResiduals{previous_residual, residual});
       if (root.has_value()) {
         roots.push_back(root.value());
       }
     }
 
     previous_residual = residual;
-    have_previous_residual = true;
   }
 
   if (!roots.empty()) {
@@ -254,16 +347,18 @@ build_boundary_edges(const cpp_helper_libs::linear_algebra::UnitVector3 &focus_o
   for (std::size_t index = 0U; index < discretization.segment_count; ++index) {
     const double azimuth =
         kTwoPi * static_cast<double>(index) / static_cast<double>(discretization.segment_count);
-    const std::optional<double> solved_delta = solve_polar_angle_for_azimuth(
-        focus_one, focus_two, axis.value(), basis_first.value(), basis_second.value(), azimuth,
-        discretization.boundary_sum_radians, previous_delta);
+    const cpp_helper_libs::linear_algebra::Vector3 direction =
+        azimuth_direction(basis_first.value(), basis_second.value(), azimuth);
+    const std::optional<double> solved_delta =
+        solve_polar_angle_for_azimuth(focus_one, focus_two, axis.value(), direction,
+                                      discretization.boundary_sum_radians, previous_delta);
     if (!solved_delta.has_value()) {
       return std::nullopt;
     }
 
     previous_delta = solved_delta;
-    boundary_points.push_back(point_on_basis(axis.value(), basis_first.value(),
-                                             basis_second.value(), solved_delta.value(), azimuth));
+    boundary_points.push_back(
+        point_on_basis_with_direction(axis.value(), direction, solved_delta.value()));
   }
 
   std::vector<MinorArc> edges;
@@ -358,23 +453,8 @@ bool SphericalEllipse::contains_policy(const cpp_helper_libs::linear_algebra::Un
 // - `boundary_edges_` forms a closed approximation of the ellipse boundary.
 bool SphericalEllipse::boundary_intersects_policy(const SphericalCurve &curve, const bool inclusive,
                                                   const bool exact) const noexcept {
-  const auto intersections_for_edge = [&](const MinorArc &edge) {
-    const std::vector<CurveIntersection> intersections =
-        exact ? edge.intersections_with_exact(curve) : edge.intersections_with(curve);
-    return intersections;
-  };
-
-  if (inclusive) {
-    return std::any_of(boundary_edges_.begin(), boundary_edges_.end(),
-                       [&](const MinorArc &edge) { return !intersections_for_edge(edge).empty(); });
-  }
-
   return std::any_of(boundary_edges_.begin(), boundary_edges_.end(), [&](const MinorArc &edge) {
-    const std::vector<CurveIntersection> intersections = intersections_for_edge(edge);
-    return std::any_of(intersections.begin(), intersections.end(),
-                       [](const CurveIntersection &intersection) {
-                         return intersection.kind() != CurveIntersectionKind::EndpointTouch;
-                       });
+    return internal::curves_intersect(edge, curve, exact, inclusive);
   });
 }
 

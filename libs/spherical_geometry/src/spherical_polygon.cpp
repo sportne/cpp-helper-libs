@@ -10,12 +10,8 @@
 
 #include "cpp_helper_libs/linear_algebra/vector3.hpp"
 #include "cpp_helper_libs/spherical_geometry/intersection.hpp"
-#include "cpp_helper_libs/spherical_geometry/zero_length_curve.hpp"
+#include "cpp_helper_libs/spherical_geometry/spherical_curve.hpp"
 #include "spherical_internal.hpp"
-
-namespace cpp_helper_libs::spherical_geometry {
-class SphericalCurve;
-} // namespace cpp_helper_libs::spherical_geometry
 
 namespace cpp_helper_libs::spherical_geometry {
 namespace {
@@ -51,21 +47,13 @@ bool point_on_boundary(const std::vector<MinorArc> &edges,
                        const cpp_helper_libs::linear_algebra::UnitVector3 &point,
                        const bool exact) {
   // Algorithm:
-  // - Wrap the query point as a zero-length curve.
-  // - Intersect each boundary edge with that point-curve.
-  // - Report true when any edge contains the point.
+  // - Query each edge directly for point location on the edge parameterization.
+  // - Report true when any edge locates the point.
   // Assumptions:
-  // - Curve intersection engine provides robust endpoint handling.
-  const std::optional<ZeroLengthCurve> point_curve = ZeroLengthCurve::at_radial(point);
-  if (!point_curve.has_value()) {
-    return false;
-  }
-
+  // - `MinorArc::locate_point` covers support and sweep-range checks under selected policy.
   return std::any_of(edges.begin(), edges.end(), [&](const MinorArc &edge) {
-    const std::vector<CurveIntersection> intersections =
-        exact ? edge.intersections_with_exact(point_curve.value())
-              : edge.intersections_with(point_curve.value());
-    return !intersections.empty();
+    const SphericalCurve &edge_curve = edge;
+    return edge_curve.locate_point(point, exact).has_value();
   });
 }
 
@@ -195,21 +183,7 @@ bool SphericalPolygon::boundary_intersects_policy(const SphericalCurve &curve, c
   // Assumptions:
   // - Boundary is fully represented by `edges_` in order.
   return std::any_of(edges_.begin(), edges_.end(), [&](const MinorArc &edge) {
-    const std::vector<CurveIntersection> intersections =
-        exact ? edge.intersections_with_exact(curve) : edge.intersections_with(curve);
-
-    if (intersections.empty()) {
-      return false;
-    }
-
-    if (inclusive) {
-      return true;
-    }
-
-    return std::any_of(intersections.begin(), intersections.end(),
-                       [](const CurveIntersection &intersection) {
-                         return intersection.kind() != CurveIntersectionKind::EndpointTouch;
-                       });
+    return internal::curves_intersect(edge, curve, exact, inclusive);
   });
 }
 

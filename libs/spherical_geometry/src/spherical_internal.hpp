@@ -10,6 +10,10 @@
 #include "cpp_helper_libs/spherical_geometry/intersection.hpp"
 #include "cpp_helper_libs/spherical_geometry/spherical_ray.hpp"
 
+namespace cpp_helper_libs::spherical_geometry {
+class SphericalCurve;
+} // namespace cpp_helper_libs::spherical_geometry
+
 namespace cpp_helper_libs::spherical_geometry::internal {
 
 /**
@@ -141,6 +145,17 @@ std::optional<CurveLocation> locate_point_on_oriented_circle(
  * Formula: `length = |sin(radius) * sweep|`.
  */
 double small_arc_length_radians(double radius_radians, double sweep_radians) noexcept;
+
+/**
+ * @brief Boolean intersection query that short-circuits without materializing records.
+ *
+ * @param first First curve.
+ * @param second Second curve.
+ * @param exact `true` for exact comparisons, `false` for tolerant policy.
+ * @param include_endpoint_touches When `false`, endpoint-only touches are ignored.
+ */
+bool curves_intersect(const SphericalCurve &first, const SphericalCurve &second, bool exact,
+                      bool include_endpoint_touches) noexcept;
 
 } // namespace cpp_helper_libs::spherical_geometry::internal
 

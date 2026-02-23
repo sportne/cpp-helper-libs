@@ -22,6 +22,17 @@ struct SupportIntersection final {
   std::vector<cpp_helper_libs::linear_algebra::UnitVector3> points;
 };
 
+bool is_endpoint_touch(const CurveLocation &first_location, const CurveLocation &second_location) {
+  return first_location.at_start || first_location.at_end || second_location.at_start ||
+         second_location.at_end;
+}
+
+bool intersection_allowed_by_filter(const CurveLocation &first_location,
+                                    const CurveLocation &second_location,
+                                    const bool include_endpoint_touches) {
+  return include_endpoint_touches || !is_endpoint_touch(first_location, second_location);
+}
+
 // Insert a parameter only if no existing parameter is equivalent within tolerance.
 void add_unique_parameter(std::vector<double> *parameters, const double value,
                           const internal::NumericPolicy &policy) {
@@ -126,12 +137,100 @@ CurveIntersection
 point_intersection_for_locations(const cpp_helper_libs::linear_algebra::UnitVector3 &point,
                                  const CurveLocation &first_location,
                                  const CurveLocation &second_location) {
-  if (first_location.at_start || first_location.at_end || second_location.at_start ||
-      second_location.at_end) {
+  if (is_endpoint_touch(first_location, second_location)) {
     return CurveIntersection::endpoint_touch(point, first_location, second_location);
   }
 
   return CurveIntersection::point(point, first_location, second_location);
+}
+
+// Fast predicate variant of coincident-support handling that avoids constructing records.
+bool coincident_intersections_exist(const SphericalCurve &first, const SphericalCurve &second,
+                                    const bool exact, const bool include_endpoint_touches) {
+  const internal::NumericPolicy policy = internal::select_policy(exact);
+
+  std::vector<double> cuts{0.0, 1.0};
+
+  const std::optional<CurveLocation> second_start_on_first =
+      first.locate_point(second.start_radial(), exact);
+  if (second_start_on_first.has_value()) {
+    add_unique_parameter(&cuts, second_start_on_first->parameter, policy);
+  }
+
+  const std::optional<CurveLocation> second_end_on_first =
+      first.locate_point(second.end_radial(), exact);
+  if (second_end_on_first.has_value()) {
+    add_unique_parameter(&cuts, second_end_on_first->parameter, policy);
+  }
+
+  std::sort(cuts.begin(), cuts.end());
+
+  for (std::size_t index = 0U; index + 1U < cuts.size(); ++index) {
+    const double start_parameter = cuts[index];
+    const double end_parameter = cuts[index + 1U];
+    if ((end_parameter - start_parameter) <= policy.parameter_epsilon) {
+      continue;
+    }
+
+    const double midpoint = 0.5 * (start_parameter + end_parameter);
+    const cpp_helper_libs::linear_algebra::UnitVector3 sample_point =
+        first.point_at_parameter(midpoint);
+
+    if (second.locate_point(sample_point, exact).has_value()) {
+      return true;
+    }
+  }
+
+  return std::any_of(cuts.begin(), cuts.end(), [&](const double cut) {
+    const cpp_helper_libs::linear_algebra::UnitVector3 point = first.point_at_parameter(cut);
+    const std::optional<CurveLocation> first_location = first.locate_point(point, exact);
+    const std::optional<CurveLocation> second_location = second.locate_point(point, exact);
+
+    if (!first_location.has_value() || !second_location.has_value()) {
+      return false;
+    }
+
+    return intersection_allowed_by_filter(first_location.value(), second_location.value(),
+                                          include_endpoint_touches);
+  });
+}
+
+bool curves_intersect_policy(const SphericalCurve &first, const SphericalCurve &second,
+                             const bool exact, const bool include_endpoint_touches) {
+  const internal::NumericPolicy policy = internal::select_policy(exact);
+
+  if (first.is_zero_length_curve() && second.is_zero_length_curve()) {
+    if (!internal::same_radial(first.start_radial(), second.start_radial(), policy)) {
+      return false;
+    }
+    return include_endpoint_touches;
+  }
+
+  if (first.is_zero_length_curve()) {
+    return include_endpoint_touches && second.locate_point(first.start_radial(), exact).has_value();
+  }
+
+  if (second.is_zero_length_curve()) {
+    return include_endpoint_touches && first.locate_point(second.start_radial(), exact).has_value();
+  }
+
+  const SupportIntersection support_intersection = intersect_supports(first, second, policy);
+  if (support_intersection.coincident) {
+    return coincident_intersections_exist(first, second, exact, include_endpoint_touches);
+  }
+
+  return std::any_of(
+      support_intersection.points.begin(), support_intersection.points.end(),
+      [&](const cpp_helper_libs::linear_algebra::UnitVector3 &candidate) {
+        const std::optional<CurveLocation> first_location = first.locate_point(candidate, exact);
+        const std::optional<CurveLocation> second_location = second.locate_point(candidate, exact);
+        if (!first_location.has_value() || !second_location.has_value()) {
+          return false;
+        }
+
+        return intersection_allowed_by_filter(first_location.value(), second_location.value(),
+                                              include_endpoint_touches);
+      });
 }
 
 // Handle coincident-support case by clipping two curve parameter ranges on the same support circle.
@@ -348,5 +447,14 @@ SphericalCurve::intersections_with_policy(const SphericalCurve &other,
 
   return intersections;
 }
+
+namespace internal {
+
+bool curves_intersect(const SphericalCurve &first, const SphericalCurve &second, const bool exact,
+                      const bool include_endpoint_touches) noexcept {
+  return curves_intersect_policy(first, second, exact, include_endpoint_touches);
+}
+
+} // namespace internal
 
 } // namespace cpp_helper_libs::spherical_geometry

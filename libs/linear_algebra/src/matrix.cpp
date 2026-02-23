@@ -180,14 +180,19 @@ std::optional<Matrix> Matrix::multiply(const Matrix &other) const noexcept {
 
   std::vector<double> result_values(product_size.value(), 0.0);
 
-  // Standard row-by-column dot-product multiplication.
+  // Cache-friendly row-major accumulation:
+  // iterate A rows, then shared dimension k, then contiguous B/result rows.
   for (std::size_t row_index = 0U; row_index < row_count_; ++row_index) {
-    for (std::size_t column_index = 0U; column_index < other.column_count_; ++column_index) {
-      double sum_value = 0.0;
-      for (std::size_t shared_index = 0U; shared_index < column_count_; ++shared_index) {
-        sum_value += (*this)(row_index, shared_index) * other(shared_index, column_index);
+    const std::size_t left_row_offset = linear_index(row_index, 0U, column_count_);
+    const std::size_t result_row_offset = linear_index(row_index, 0U, other.column_count_);
+
+    for (std::size_t shared_index = 0U; shared_index < column_count_; ++shared_index) {
+      const double left_value = values_[left_row_offset + shared_index];
+      const std::size_t right_row_offset = linear_index(shared_index, 0U, other.column_count_);
+      for (std::size_t column_index = 0U; column_index < other.column_count_; ++column_index) {
+        result_values[result_row_offset + column_index] +=
+            left_value * other.values_[right_row_offset + column_index];
       }
-      result_values[linear_index(row_index, column_index, other.column_count_)] = sum_value;
     }
   }
 
