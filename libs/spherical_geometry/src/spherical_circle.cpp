@@ -8,7 +8,6 @@
 #include <numbers>
 
 #include "cpp_helper_libs/linear_algebra/vector3.hpp"
-#include "cpp_helper_libs/spherical_geometry/intersection.hpp"
 #include "cpp_helper_libs/spherical_geometry/spherical_ray.hpp"
 #include "spherical_internal.hpp"
 
@@ -128,25 +127,10 @@ bool SphericalCircle::boundary_intersects_policy(const SphericalCurve &curve, co
   // - In exclusive mode, require at least one non-endpoint-touch intersection.
   // Assumptions:
   // - `boundary_arcs_` forms a complete closed boundary with no gaps.
-  return std::any_of(
-      boundary_arcs_.begin(), boundary_arcs_.end(), [&](const SmallArc &boundary_arc) {
-        const std::vector<CurveIntersection> intersections =
-            exact ? boundary_arc.intersections_with_exact(curve)
-                  : boundary_arc.intersections_with(curve);
-
-        if (intersections.empty()) {
-          return false;
-        }
-
-        if (inclusive) {
-          return true;
-        }
-
-        return std::any_of(intersections.begin(), intersections.end(),
-                           [](const CurveIntersection &intersection) {
-                             return intersection.kind() != CurveIntersectionKind::EndpointTouch;
-                           });
-      });
+  return std::any_of(boundary_arcs_.begin(), boundary_arcs_.end(),
+                     [&](const SmallArc &boundary_arc) {
+                       return internal::curves_intersect(boundary_arc, curve, exact, inclusive);
+                     });
 }
 
 } // namespace cpp_helper_libs::spherical_geometry
