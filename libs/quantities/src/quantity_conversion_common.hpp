@@ -14,10 +14,10 @@
 namespace cpp_helper_libs::quantities::internal {
 
 template <typename UnitType, std::size_t TableSize>
-double to_raw_from_scale_table(
-    const double value, const UnitType unit,
-    const std::array<std::pair<UnitType, double>, TableSize> &scales_to_raw,
-    const std::string_view type_name) {
+double
+to_raw_from_scale_table(const double value, const UnitType unit,
+                        const std::array<std::pair<UnitType, double>, TableSize> &scales_to_raw,
+                        const std::string_view type_name) {
   const auto it = std::find_if(scales_to_raw.begin(), scales_to_raw.end(),
                                [unit](const auto &entry) { return entry.first == unit; });
   if (it != scales_to_raw.end()) {
@@ -28,10 +28,10 @@ double to_raw_from_scale_table(
 }
 
 template <typename UnitType, std::size_t TableSize>
-double from_raw_with_scale_table(
-    const double raw, const UnitType unit,
-    const std::array<std::pair<UnitType, double>, TableSize> &scales_to_raw,
-    const std::string_view type_name) {
+double
+from_raw_with_scale_table(const double raw, const UnitType unit,
+                          const std::array<std::pair<UnitType, double>, TableSize> &scales_to_raw,
+                          const std::string_view type_name) {
   const auto it = std::find_if(scales_to_raw.begin(), scales_to_raw.end(),
                                [unit](const auto &entry) { return entry.first == unit; });
   if (it != scales_to_raw.end()) {
@@ -45,15 +45,15 @@ double from_raw_with_scale_table(
 
 #define CPPHL_DEFINE_SCALED_QUANTITY_CORE_METHODS(QuantityType, ScaleTable)                        \
   QuantityType::QuantityType(const double value, const Unit unit)                                  \
-      : QuantityBase(to_raw(value, unit)) {}                                                        \
-                                                                                                    \
-  double QuantityType::in(const Unit unit) const {                                                  \
+      : QuantityBase(to_raw(value, unit)) {}                                                       \
+                                                                                                   \
+  double QuantityType::in(const Unit unit) const {                                                 \
     return internal::from_raw_with_scale_table(raw_value(), unit, ScaleTable, #QuantityType);      \
-  }                                                                                                 \
-                                                                                                    \
+  }                                                                                                \
+                                                                                                   \
   QuantityType QuantityType::from_raw(const double raw) noexcept { return QuantityType(raw); }     \
-                                                                                                    \
-  double QuantityType::to_raw(const double value, const Unit unit) {                                \
+                                                                                                   \
+  double QuantityType::to_raw(const double value, const Unit unit) {                               \
     return internal::to_raw_from_scale_table(value, unit, ScaleTable, #QuantityType);              \
   }
 

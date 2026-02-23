@@ -41,11 +41,9 @@ great_circle_signed_sweep_radians(const cpp_helper_libs::quantities::Angle sweep
   return sweep.in(cpp_helper_libs::quantities::Angle::Unit::Radian);
 }
 
-inline std::optional<CurveLocation>
-great_circle_locate_point(const SphericalRay &start_ray,
-                          const cpp_helper_libs::quantities::Angle sweep,
-                          const cpp_helper_libs::linear_algebra::UnitVector3 &point,
-                          const bool exact) noexcept {
+inline std::optional<CurveLocation> great_circle_locate_point(
+    const SphericalRay &start_ray, const cpp_helper_libs::quantities::Angle sweep,
+    const cpp_helper_libs::linear_algebra::UnitVector3 &point, const bool exact) noexcept {
   return locate_point_on_oriented_circle(great_circle_support_axis(start_ray), 0.0,
                                          great_circle_start_radial(start_ray),
                                          great_circle_signed_sweep_radians(sweep), point, exact);
@@ -63,43 +61,44 @@ great_circle_point_at_parameter(const SphericalRay &start_ray,
 
 } // namespace cpp_helper_libs::spherical_geometry::internal
 
-#define CPPHL_DEFINE_GREAT_CIRCLE_ARC_CORE_METHODS(ArcType, StartRayMember, SweepMember)             \
-  cpp_helper_libs::linear_algebra::UnitVector3 ArcType::start_radial() const noexcept {               \
-    return internal::great_circle_start_radial(StartRayMember);                                        \
-  }                                                                                                     \
-                                                                                                        \
-  cpp_helper_libs::linear_algebra::UnitVector3 ArcType::end_radial() const noexcept {                 \
-    return internal::great_circle_end_radial(StartRayMember, SweepMember);                            \
-  }                                                                                                     \
-                                                                                                        \
-  SphericalRay ArcType::start_ray() const noexcept { return StartRayMember; }                          \
-                                                                                                        \
-  SphericalRay ArcType::end_ray() const noexcept {                                                      \
-    return internal::great_circle_end_ray(StartRayMember, SweepMember);                                \
-  }                                                                                                     \
-                                                                                                        \
-  cpp_helper_libs::quantities::Angle ArcType::length() const noexcept { return SweepMember; }         \
-                                                                                                        \
-  cpp_helper_libs::linear_algebra::UnitVector3 ArcType::support_axis() const noexcept {               \
-    return internal::great_circle_support_axis(StartRayMember);                                        \
-  }                                                                                                     \
-                                                                                                        \
-  double ArcType::support_constant() const noexcept { return 0.0; }                                    \
-                                                                                                        \
-  double ArcType::signed_sweep_radians() const noexcept {                                               \
-    return internal::great_circle_signed_sweep_radians(SweepMember);                                   \
-  }                                                                                                     \
-                                                                                                        \
-  std::optional<CurveLocation> ArcType::locate_point(                                                  \
-      const cpp_helper_libs::linear_algebra::UnitVector3 &point, const bool exact) const noexcept {   \
-    return internal::great_circle_locate_point(StartRayMember, SweepMember, point, exact);            \
-  }                                                                                                     \
-                                                                                                        \
-  cpp_helper_libs::linear_algebra::UnitVector3 ArcType::point_at_parameter(                            \
-      const double parameter) const noexcept {                                                          \
-    return internal::great_circle_point_at_parameter(StartRayMember, SweepMember, parameter);          \
-  }                                                                                                     \
-                                                                                                        \
+#define CPPHL_DEFINE_GREAT_CIRCLE_ARC_CORE_METHODS(ArcType, StartRayMember, SweepMember)           \
+  cpp_helper_libs::linear_algebra::UnitVector3 ArcType::start_radial() const noexcept {            \
+    return internal::great_circle_start_radial(StartRayMember);                                    \
+  }                                                                                                \
+                                                                                                   \
+  cpp_helper_libs::linear_algebra::UnitVector3 ArcType::end_radial() const noexcept {              \
+    return internal::great_circle_end_radial(StartRayMember, SweepMember);                         \
+  }                                                                                                \
+                                                                                                   \
+  SphericalRay ArcType::start_ray() const noexcept { return StartRayMember; }                      \
+                                                                                                   \
+  SphericalRay ArcType::end_ray() const noexcept {                                                 \
+    return internal::great_circle_end_ray(StartRayMember, SweepMember);                            \
+  }                                                                                                \
+                                                                                                   \
+  cpp_helper_libs::quantities::Angle ArcType::length() const noexcept { return SweepMember; }      \
+                                                                                                   \
+  cpp_helper_libs::linear_algebra::UnitVector3 ArcType::support_axis() const noexcept {            \
+    return internal::great_circle_support_axis(StartRayMember);                                    \
+  }                                                                                                \
+                                                                                                   \
+  double ArcType::support_constant() const noexcept { return 0.0; }                                \
+                                                                                                   \
+  double ArcType::signed_sweep_radians() const noexcept {                                          \
+    return internal::great_circle_signed_sweep_radians(SweepMember);                               \
+  }                                                                                                \
+                                                                                                   \
+  std::optional<CurveLocation> ArcType::locate_point(                                              \
+      const cpp_helper_libs::linear_algebra::UnitVector3 &point, const bool exact)                 \
+      const noexcept {                                                                             \
+    return internal::great_circle_locate_point(StartRayMember, SweepMember, point, exact);         \
+  }                                                                                                \
+                                                                                                   \
+  cpp_helper_libs::linear_algebra::UnitVector3 ArcType::point_at_parameter(const double parameter) \
+      const noexcept {                                                                             \
+    return internal::great_circle_point_at_parameter(StartRayMember, SweepMember, parameter);      \
+  }                                                                                                \
+                                                                                                   \
   bool ArcType::is_zero_length_curve() const noexcept { return false; }
 
 #endif // CPP_HELPER_LIBS_SPHERICAL_GEOMETRY_GREAT_CIRCLE_ARC_COMMON_HPP
