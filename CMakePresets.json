@@ -134,6 +134,14 @@
       ]
     },
     {
+      "name": "build-clang-debug-cpd",
+      "description": "Build only the cpd target in the clang-debug build tree.",
+      "configurePreset": "clang-debug",
+      "targets": [
+        "cpd"
+      ]
+    },
+    {
       "name": "build-clang-debug-ci-local",
       "description": "Build only the ci-local target in the clang-debug build tree.",
       "configurePreset": "clang-debug",
@@ -295,6 +303,21 @@
         {
           "type": "build",
           "name": "build-clang-debug-format"
+        }
+      ]
+    },
+    {
+      "name": "cpd",
+      "displayName": "CPD Duplicate Scan",
+      "description": "Configure debug tree and run PMD CPD duplicate scan target.",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "clang-debug"
+        },
+        {
+          "type": "build",
+          "name": "build-clang-debug-cpd"
         }
       ]
     },

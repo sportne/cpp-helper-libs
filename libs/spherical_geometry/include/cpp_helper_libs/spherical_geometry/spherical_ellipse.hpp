@@ -11,8 +11,8 @@
 
 #include "cpp_helper_libs/linear_algebra/unit_vector3.hpp"
 #include "cpp_helper_libs/quantities/angle.hpp"
+#include "cpp_helper_libs/spherical_geometry/detail/policy_shape_facade.hpp"
 #include "cpp_helper_libs/spherical_geometry/minor_arc.hpp"
-#include "cpp_helper_libs/spherical_geometry/spherical_shape.hpp"
 
 namespace cpp_helper_libs::spherical_geometry {
 
@@ -21,7 +21,7 @@ class SphericalCurve;
 /**
  * @brief Spherical ellipse defined by two foci and a constant sum-angle boundary.
  */
-class SphericalEllipse final : public SphericalShape {
+class SphericalEllipse final : public detail::PolicyShapeFacade<SphericalEllipse> {
 public:
   /// Default number of boundary segments used to approximate ellipse perimeter operations.
   static constexpr std::size_t kDefaultBoundarySegmentCount = 360U;
@@ -61,45 +61,9 @@ public:
    */
   std::size_t boundary_segment_count() const noexcept { return boundary_segment_count_; }
 
-  /**
-   * @brief Inclusive containment query with tolerant numeric policy.
-   */
-  bool contains_inclusive(
-      const cpp_helper_libs::linear_algebra::UnitVector3 &point) const noexcept override;
-  /**
-   * @brief Exclusive containment query with tolerant numeric policy.
-   */
-  bool contains_exclusive(
-      const cpp_helper_libs::linear_algebra::UnitVector3 &point) const noexcept override;
-  /**
-   * @brief Inclusive containment query with exact numeric policy.
-   */
-  bool contains_inclusive_exact(
-      const cpp_helper_libs::linear_algebra::UnitVector3 &point) const noexcept override;
-  /**
-   * @brief Exclusive containment query with exact numeric policy.
-   */
-  bool contains_exclusive_exact(
-      const cpp_helper_libs::linear_algebra::UnitVector3 &point) const noexcept override;
-
-  /**
-   * @brief Inclusive boundary intersection query with tolerant numeric policy.
-   */
-  bool boundary_intersects_inclusive(const SphericalCurve &curve) const noexcept override;
-  /**
-   * @brief Exclusive boundary intersection query with tolerant numeric policy.
-   */
-  bool boundary_intersects_exclusive(const SphericalCurve &curve) const noexcept override;
-  /**
-   * @brief Inclusive boundary intersection query with exact numeric policy.
-   */
-  bool boundary_intersects_inclusive_exact(const SphericalCurve &curve) const noexcept override;
-  /**
-   * @brief Exclusive boundary intersection query with exact numeric policy.
-   */
-  bool boundary_intersects_exclusive_exact(const SphericalCurve &curve) const noexcept override;
-
 private:
+  template <typename> friend class detail::PolicyShapeFacade;
+
   SphericalEllipse(const cpp_helper_libs::linear_algebra::UnitVector3 &focus_one,
                    const cpp_helper_libs::linear_algebra::UnitVector3 &focus_two,
                    cpp_helper_libs::quantities::Angle boundary_sum,

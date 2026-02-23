@@ -1,4 +1,4 @@
-.PHONY: help debug release asan coverage static-analysis format format-check ci \
+.PHONY: help debug release asan coverage static-analysis format format-check cpd ci \
         configure build test clean clean-debug clean-release clean-asan clean-coverage clean-static-analysis clean-all clean-fast distclean
 
 help:
@@ -9,6 +9,7 @@ help:
 	@echo "  make static-analysis  - Configure/build static-analysis preset (clang-tidy/cppcheck/IWYU)"
 	@echo "  make format-check     - Run formatting check"
 	@echo "  make format           - Apply formatting"
+	@echo "  make cpd              - Run PMD CPD duplicate-code scan (report-only by default)"
 	@echo "  make coverage         - Configure/build/test coverage preset"
 	@echo "  make ci               - Run full local CI target"
 	@echo "  make clean            - Clean clang-debug build tree"
@@ -36,6 +37,9 @@ format-check:
 
 format:
 	cmake --workflow --preset format
+
+cpd:
+	cmake --workflow --preset cpd
 
 ci:
 	cmake --workflow --preset ci-local

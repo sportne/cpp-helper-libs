@@ -57,9 +57,10 @@ function(prune_test_coverage_artifacts)
 endfunction()
 
 # 1) Debug build: format gate + tests.
-message(STATUS "[ci-local] clang-debug: configure/build/format-check/test")
+message(STATUS "[ci-local] clang-debug: configure/build/cpd/format-check/test")
 run_step("${CMAKE_COMMAND}" --preset clang-debug)
 run_step("${CMAKE_COMMAND}" --build --preset build-clang-debug --parallel)
+run_step("${CMAKE_COMMAND}" --build --preset build-clang-debug --target cpd --parallel)
 run_step("${CMAKE_COMMAND}" --build --preset build-clang-debug --target format-check --parallel)
 run_step("${CTEST_EXECUTABLE}" --preset test-clang-debug)
 

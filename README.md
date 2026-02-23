@@ -92,6 +92,7 @@ const auto equator_quarter = cpp_helper_libs::spherical_geometry::MinorArc::from
 - cppcheck
 - include-what-you-use
 - gcovr
+- PMD (optional, for CPD duplicate-code scans)
 
 ## Common Commands
 
@@ -105,6 +106,7 @@ cmake --workflow --preset coverage
 cmake --workflow --preset static-analysis
 cmake --workflow --preset format-check
 cmake --workflow --preset format
+cmake --workflow --preset cpd
 cmake --workflow --preset ci-local
 ```
 
@@ -118,6 +120,7 @@ make coverage
 make static-analysis
 make format-check
 make format
+make cpd
 make ci
 ```
 
@@ -141,7 +144,12 @@ ctest --preset test-clang-debug
 ctest --preset test-clang-release
 ctest --preset test-clang-debug-asan-ubsan
 ```
-4. Coverage threshold (`>= 80%` for `libs/`, tests excluded):
+4. Duplicate-code scan (report-only by default):
+```bash
+cmake --workflow --preset cpd
+```
+The scan writes `build/cpd/cpd-report.md`. If PMD is not available, the step is skipped with a warning.
+5. Coverage threshold (`>= 80%` for `libs/`, tests excluded):
 ```bash
 cmake --preset gcc-coverage
 cmake --build --preset build-gcc-coverage

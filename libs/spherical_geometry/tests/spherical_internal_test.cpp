@@ -6,10 +6,10 @@
 #include <optional>
 #include <stdexcept>
 
+#include "../src/spherical_internal.hpp"
 #include "cpp_helper_libs/linear_algebra/unit_vector3.hpp"
 #include "cpp_helper_libs/spherical_geometry/intersection.hpp"
 #include "cpp_helper_libs/spherical_geometry/spherical_ray.hpp"
-#include "../src/spherical_internal.hpp"
 
 // NOLINTBEGIN(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
 namespace {
@@ -23,13 +23,13 @@ template <typename ValueType> ValueType require_value(const std::optional<ValueT
 }
 
 using cpp_helper_libs::linear_algebra::UnitVector3;
-using cpp_helper_libs::spherical_geometry::internal::NumericPolicy;
 using cpp_helper_libs::spherical_geometry::internal::any_orthogonal_unit;
 using cpp_helper_libs::spherical_geometry::internal::clamp_cosine;
 using cpp_helper_libs::spherical_geometry::internal::exact_policy;
 using cpp_helper_libs::spherical_geometry::internal::locate_point_on_oriented_circle;
 using cpp_helper_libs::spherical_geometry::internal::make_ray_on_oriented_circle;
 using cpp_helper_libs::spherical_geometry::internal::nearly_equal;
+using cpp_helper_libs::spherical_geometry::internal::NumericPolicy;
 using cpp_helper_libs::spherical_geometry::internal::rotate_about_axis_exact;
 using cpp_helper_libs::spherical_geometry::internal::rotate_about_axis_tolerant;
 using cpp_helper_libs::spherical_geometry::internal::same_radial;
@@ -126,18 +126,20 @@ TEST(SphericalInternalTest, LocatesPointsOnOrientedSweeps) {
   EXPECT_TRUE(zero_sweep_at_start_value.at_start);
   EXPECT_TRUE(zero_sweep_at_start_value.at_end);
 
-  EXPECT_FALSE(locate_point_on_oriented_circle(z_axis, 0.0, x_axis, 0.0, y_axis, false).has_value());
-  EXPECT_FALSE(locate_point_on_oriented_circle(z_axis, 0.0, x_axis, std::numbers::pi_v<double> / 4.0,
-                                               y_axis, true)
+  EXPECT_FALSE(
+      locate_point_on_oriented_circle(z_axis, 0.0, x_axis, 0.0, y_axis, false).has_value());
+  EXPECT_FALSE(locate_point_on_oriented_circle(z_axis, 0.0, x_axis,
+                                               std::numbers::pi_v<double> / 4.0, y_axis, true)
                    .has_value());
-  EXPECT_FALSE(locate_point_on_oriented_circle(z_axis, 0.0, x_axis, std::numbers::pi_v<double> / 2.0,
-                                               z_axis, false)
+  EXPECT_FALSE(locate_point_on_oriented_circle(z_axis, 0.0, x_axis,
+                                               std::numbers::pi_v<double> / 2.0, z_axis, false)
                    .has_value());
 }
 
 TEST(SphericalInternalTest, ComputesSmallArcLengthMagnitude) {
-  EXPECT_NEAR(small_arc_length_radians(std::numbers::pi_v<double> / 6.0, -std::numbers::pi_v<double>),
-              std::numbers::pi_v<double> / 2.0, 1e-12);
+  EXPECT_NEAR(
+      small_arc_length_radians(std::numbers::pi_v<double> / 6.0, -std::numbers::pi_v<double>),
+      std::numbers::pi_v<double> / 2.0, 1e-12);
 }
 
 } // namespace

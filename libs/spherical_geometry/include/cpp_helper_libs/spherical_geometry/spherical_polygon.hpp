@@ -9,8 +9,8 @@
 #include <vector>
 
 #include "cpp_helper_libs/linear_algebra/unit_vector3.hpp"
+#include "cpp_helper_libs/spherical_geometry/detail/policy_shape_facade.hpp"
 #include "cpp_helper_libs/spherical_geometry/minor_arc.hpp"
-#include "cpp_helper_libs/spherical_geometry/spherical_shape.hpp"
 
 namespace cpp_helper_libs::spherical_geometry {
 
@@ -19,7 +19,7 @@ class SphericalCurve;
 /**
  * @brief Non-self-intersecting spherical polygon made of minor-arc edges.
  */
-class SphericalPolygon final : public SphericalShape {
+class SphericalPolygon final : public detail::PolicyShapeFacade<SphericalPolygon> {
 public:
   /**
    * @brief Build a simple spherical polygon from ordered boundary vertices.
@@ -39,45 +39,9 @@ public:
     return vertices_;
   }
 
-  /**
-   * @brief Inclusive containment query with tolerant numeric policy.
-   */
-  bool contains_inclusive(
-      const cpp_helper_libs::linear_algebra::UnitVector3 &point) const noexcept override;
-  /**
-   * @brief Exclusive containment query with tolerant numeric policy.
-   */
-  bool contains_exclusive(
-      const cpp_helper_libs::linear_algebra::UnitVector3 &point) const noexcept override;
-  /**
-   * @brief Inclusive containment query with exact numeric policy.
-   */
-  bool contains_inclusive_exact(
-      const cpp_helper_libs::linear_algebra::UnitVector3 &point) const noexcept override;
-  /**
-   * @brief Exclusive containment query with exact numeric policy.
-   */
-  bool contains_exclusive_exact(
-      const cpp_helper_libs::linear_algebra::UnitVector3 &point) const noexcept override;
-
-  /**
-   * @brief Inclusive boundary intersection query with tolerant numeric policy.
-   */
-  bool boundary_intersects_inclusive(const SphericalCurve &curve) const noexcept override;
-  /**
-   * @brief Exclusive boundary intersection query with tolerant numeric policy.
-   */
-  bool boundary_intersects_exclusive(const SphericalCurve &curve) const noexcept override;
-  /**
-   * @brief Inclusive boundary intersection query with exact numeric policy.
-   */
-  bool boundary_intersects_inclusive_exact(const SphericalCurve &curve) const noexcept override;
-  /**
-   * @brief Exclusive boundary intersection query with exact numeric policy.
-   */
-  bool boundary_intersects_exclusive_exact(const SphericalCurve &curve) const noexcept override;
-
 private:
+  template <typename> friend class detail::PolicyShapeFacade;
+
   SphericalPolygon(std::vector<cpp_helper_libs::linear_algebra::UnitVector3> vertices,
                    std::vector<MinorArc> edges) noexcept
       : vertices_(std::move(vertices)), edges_(std::move(edges)) {}
