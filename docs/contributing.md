@@ -49,6 +49,14 @@ ctest --preset test-clang-release
 ctest --preset test-clang-debug-asan-ubsan
 ```
 
+Duplicate-code scan (report-only by default):
+
+```bash
+cmake --workflow --preset cpd
+```
+
+This generates `build/cpd/cpd-report.md`. If PMD is not installed, the scan is skipped with a warning.
+
 Coverage:
 
 ```bash

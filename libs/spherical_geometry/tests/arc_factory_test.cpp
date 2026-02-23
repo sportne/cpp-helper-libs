@@ -37,12 +37,14 @@ TEST(ArcFactoryTest, ValidatesMinorArcConstructionPaths) {
   const UnitVector3 y_axis = require_value(UnitVector3::from_components(0.0, 1.0, 0.0));
   const UnitVector3 negative_x = require_value(UnitVector3::from_components(-1.0, 0.0, 0.0));
 
-  const SphericalRay start_ray = require_value(SphericalRay::from_radial_and_tangent(x_axis, y_axis));
+  const SphericalRay start_ray =
+      require_value(SphericalRay::from_radial_and_tangent(x_axis, y_axis));
 
   EXPECT_FALSE(MinorArc::from_start_and_sweep(start_ray, Angle::degrees(0.0)).has_value());
   EXPECT_FALSE(MinorArc::from_start_and_sweep(start_ray, Angle::degrees(180.0)).has_value());
 
-  const MinorArc arc = require_value(MinorArc::from_start_and_sweep(start_ray, Angle::degrees(45.0)));
+  const MinorArc arc =
+      require_value(MinorArc::from_start_and_sweep(start_ray, Angle::degrees(45.0)));
   EXPECT_EQ(arc.start_ray().radial(), x_axis);
 
   EXPECT_FALSE(MinorArc::from_endpoints(x_axis, x_axis).has_value());
@@ -52,12 +54,14 @@ TEST(ArcFactoryTest, ValidatesMinorArcConstructionPaths) {
 TEST(ArcFactoryTest, ValidatesMajorArcConstructionBounds) {
   const UnitVector3 x_axis = require_value(UnitVector3::from_components(1.0, 0.0, 0.0));
   const UnitVector3 y_axis = require_value(UnitVector3::from_components(0.0, 1.0, 0.0));
-  const SphericalRay start_ray = require_value(SphericalRay::from_radial_and_tangent(x_axis, y_axis));
+  const SphericalRay start_ray =
+      require_value(SphericalRay::from_radial_and_tangent(x_axis, y_axis));
 
   EXPECT_FALSE(MajorArc::from_start_and_sweep(start_ray, Angle::degrees(90.0)).has_value());
   EXPECT_FALSE(MajorArc::from_start_and_sweep(start_ray, Angle::degrees(360.0)).has_value());
 
-  const MajorArc arc = require_value(MajorArc::from_start_and_sweep(start_ray, Angle::degrees(180.0)));
+  const MajorArc arc =
+      require_value(MajorArc::from_start_and_sweep(start_ray, Angle::degrees(180.0)));
   EXPECT_NEAR(arc.length().in(Angle::Unit::Radian), std::numbers::pi_v<double>, 1e-12);
   EXPECT_EQ(arc.start_ray().radial(), x_axis);
 }

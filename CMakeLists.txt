@@ -17,6 +17,10 @@ option(CPPHL_ENABLE_COVERAGE "Enable coverage instrumentation for GNU builds" OF
 option(CPPHL_ENABLE_CLANG_TIDY "Enable clang-tidy static analysis on first-party targets" OFF)
 option(CPPHL_ENABLE_CPPCHECK "Enable cppcheck static analysis on first-party targets" OFF)
 option(CPPHL_ENABLE_INCLUDE_WHAT_YOU_USE "Enable include-what-you-use analysis on first-party targets" OFF)
+option(CPPHL_ENABLE_CPD "Enable PMD CPD duplicate-code scanning target" ON)
+set(CPPHL_CPD_MINIMUM_TOKENS 220 CACHE STRING "Minimum token threshold used by CPD duplicate detection")
+option(CPPHL_CPD_FAIL_ON_VIOLATION "Fail CPD target when duplicate blocks are found" OFF)
+set(CPPHL_PMD_EXECUTABLE "" CACHE FILEPATH "Optional explicit path to PMD executable (pmd or pmd.bat)")
 
 # Load helper modules that define reusable interface targets/functions.
 include(cmake/ProjectOptions.cmake)
@@ -71,6 +75,20 @@ add_custom_target(format-check
           -P "${CMAKE_SOURCE_DIR}/cmake/RunFormat.cmake"
   WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
   COMMENT "Checking C/C++ formatting under libs/ and tests/"
+  VERBATIM
+)
+
+# Convenience target: run PMD CPD duplicate-code scan over first-party libs.
+add_custom_target(cpd
+  COMMAND "${CMAKE_COMMAND}"
+          -DREPO_ROOT=${CMAKE_SOURCE_DIR}
+          -DCPPHL_ENABLE_CPD=${CPPHL_ENABLE_CPD}
+          -DCPPHL_CPD_MINIMUM_TOKENS=${CPPHL_CPD_MINIMUM_TOKENS}
+          -DCPPHL_CPD_FAIL_ON_VIOLATION=${CPPHL_CPD_FAIL_ON_VIOLATION}
+          -DCPPHL_PMD_EXECUTABLE=${CPPHL_PMD_EXECUTABLE}
+          -P "${CMAKE_SOURCE_DIR}/cmake/RunCpd.cmake"
+  WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+  COMMENT "Running PMD CPD duplicate-code scan"
   VERBATIM
 )
 

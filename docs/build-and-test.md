@@ -12,6 +12,7 @@
 - cppcheck
 - include-what-you-use
 - gcovr
+- PMD (optional, for CPD duplicate-code scans)
 
 ## Initialize Submodules
 
@@ -93,11 +94,11 @@ make ci
 
 The `ci-local` target runs these gates in sequence:
 
-1. `clang-debug` configure/build + `format-check` + debug tests.
-2. `clang-static-analysis` configure/build.
-3. `clang-release` configure/build/test.
-4. `clang-debug-asan-ubsan` configure/build/test.
-5. `gcc-coverage` configure/build/test + coverage threshold check.
+1. `clang-debug` configure/build + CPD duplicate-code scan (`cpd`) + `format-check` + debug tests.
+3. `clang-static-analysis` configure/build.
+4. `clang-release` configure/build/test.
+5. `clang-debug-asan-ubsan` configure/build/test.
+6. `gcc-coverage` configure/build/test + coverage threshold check.
 
 ## Shortcut Commands
 
@@ -111,6 +112,7 @@ cmake --workflow --preset coverage
 cmake --workflow --preset static-analysis
 cmake --workflow --preset format-check
 cmake --workflow --preset format
+cmake --workflow --preset cpd
 ```
 
 Or use `Makefile` aliases:
@@ -123,6 +125,7 @@ make coverage
 make static-analysis
 make format-check
 make format
+make cpd
 make clean
 make clean-all
 make distclean
@@ -144,6 +147,31 @@ cmake --build --preset build-clang-static-analysis
 ```
 
 This preset enables `clang-tidy`, `cppcheck`, and `include-what-you-use` and fails on findings.
+
+## Duplicate-Code Scan (CPD)
+
+```bash
+cmake --workflow --preset cpd
+```
+
+Equivalent shortcut:
+
+```bash
+make cpd
+```
+
+Defaults:
+- scans tracked first-party files under `libs/**/src` and `libs/**/include` (tests excluded)
+- uses `minimum-tokens=220` with `--ignore-identifiers --ignore-literals`
+- report path: `build/cpd/cpd-report.md`
+- report-only mode (`CPPHL_CPD_FAIL_ON_VIOLATION=OFF`)
+
+Tool resolution order:
+1. `CPPHL_PMD_EXECUTABLE` cache path override
+2. `pmd` / `pmd.bat` from `PATH`
+3. fallback under `third_party/pmd/*/bin/`
+
+If PMD is unavailable, CPD is skipped with a status warning and the command succeeds.
 
 ## Warning Policy
 
