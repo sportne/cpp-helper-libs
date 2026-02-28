@@ -20,7 +20,9 @@
 git submodule update --init --recursive
 ```
 
-GoogleTest is vendored as a git submodule under `third_party/googletest`.
+GoogleTest and Google Benchmark are vendored as git submodules under:
+- `third_party/googletest`
+- `third_party/googlebenchmark`
 
 ## Fast Path
 
@@ -109,6 +111,9 @@ cmake --workflow --preset debug
 cmake --workflow --preset release
 cmake --workflow --preset asan
 cmake --workflow --preset coverage
+cmake --workflow --preset benchmark
+cmake --workflow --preset benchmark-baseline
+cmake --workflow --preset benchmark-compare
 cmake --workflow --preset static-analysis
 cmake --workflow --preset format-check
 cmake --workflow --preset format
@@ -122,6 +127,9 @@ make debug
 make release
 make asan
 make coverage
+make bench
+make bench-baseline
+make bench-compare
 make static-analysis
 make format-check
 make format
@@ -204,6 +212,38 @@ gcovr --root . --filter '^libs/' --exclude '^third_party/' --exclude '.*/tests/.
 ```
 
 Coverage must remain at or above `80%` line coverage for first-party code under `libs/`.
+
+## Local Performance Benchmarks
+
+Run spherical-geometry benchmarks and write JSON output:
+
+```bash
+cmake --workflow --preset benchmark
+```
+
+Record/update local baseline:
+
+```bash
+cmake --workflow --preset benchmark-baseline
+```
+
+Compare against local baseline (fails on >10% median `cpu_time` regressions):
+
+```bash
+cmake --workflow --preset benchmark-compare
+```
+
+Equivalent shortcuts:
+
+```bash
+make bench
+make bench-baseline
+make bench-compare
+```
+
+Files:
+- latest run JSON: `build/clang-benchmark/benchmarks/spherical_geometry/latest.json`
+- local baseline JSON: `docs/benchmarks/spherical_geometry-baseline.local.json`
 
 ## CI Parity Matrix
 

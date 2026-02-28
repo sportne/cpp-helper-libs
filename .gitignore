@@ -52,6 +52,7 @@ Testing/
 coverage.xml
 coverage*.txt
 coverage/
+docs/benchmarks/*.local.json
 
 # IDE and tooling
 .vscode/

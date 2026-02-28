@@ -1,4 +1,4 @@
-.PHONY: help debug release asan coverage static-analysis format format-check cpd ci \
+.PHONY: help debug release asan coverage bench bench-baseline bench-compare static-analysis format format-check cpd ci \
         configure build test clean clean-debug clean-release clean-asan clean-coverage clean-static-analysis clean-all clean-fast distclean
 
 help:
@@ -7,6 +7,9 @@ help:
 	@echo "  make release          - Configure/build/test clang-release"
 	@echo "  make asan             - Configure/build/test clang-debug-asan-ubsan"
 	@echo "  make static-analysis  - Configure/build static-analysis preset (clang-tidy/cppcheck/IWYU)"
+	@echo "  make bench            - Configure and run spherical-geometry benchmarks (local)"
+	@echo "  make bench-baseline   - Record local spherical-geometry benchmark baseline"
+	@echo "  make bench-compare    - Run + compare spherical-geometry benchmarks vs local baseline"
 	@echo "  make format-check     - Run formatting check"
 	@echo "  make format           - Apply formatting"
 	@echo "  make cpd              - Run PMD CPD duplicate-code scan (report-only by default)"
@@ -28,6 +31,15 @@ asan:
 
 coverage:
 	cmake --workflow --preset coverage
+
+bench:
+	cmake --workflow --preset benchmark
+
+bench-baseline:
+	cmake --workflow --preset benchmark-baseline
+
+bench-compare:
+	cmake --workflow --preset benchmark-compare
 
 static-analysis:
 	cmake --workflow --preset static-analysis

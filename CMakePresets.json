@@ -88,6 +88,17 @@
         "CPPHL_ENABLE_CPPCHECK": "ON",
         "CPPHL_ENABLE_INCLUDE_WHAT_YOU_USE": "ON"
       }
+    },
+    {
+      "name": "clang-benchmark",
+      "displayName": "Clang Release + Benchmarks",
+      "description": "Clang Release configuration with spherical-geometry benchmarks enabled.",
+      "inherits": "clang-release",
+      "binaryDir": "${sourceDir}/build/clang-benchmark",
+      "cacheVariables": {
+        "CPPHL_BUILD_TESTS": "OFF",
+        "CPPHL_BUILD_BENCHMARKS": "ON"
+      }
     }
   ],
   "buildPresets": [
@@ -116,6 +127,35 @@
       "description": "Build first-party targets with static analysis tools active.",
       "configurePreset": "clang-static-analysis",
       "verbose": true
+    },
+    {
+      "name": "build-clang-benchmark",
+      "description": "Build all targets for the clang-benchmark configure preset.",
+      "configurePreset": "clang-benchmark"
+    },
+    {
+      "name": "build-clang-benchmark-bench-spherical-geometry",
+      "description": "Build only the spherical-geometry benchmark run target in the clang-benchmark build tree.",
+      "configurePreset": "clang-benchmark",
+      "targets": [
+        "bench-spherical-geometry"
+      ]
+    },
+    {
+      "name": "build-clang-benchmark-bench-baseline-spherical-geometry",
+      "description": "Build only the spherical-geometry benchmark baseline target in the clang-benchmark build tree.",
+      "configurePreset": "clang-benchmark",
+      "targets": [
+        "bench-baseline-spherical-geometry"
+      ]
+    },
+    {
+      "name": "build-clang-benchmark-bench-compare-spherical-geometry",
+      "description": "Build only the spherical-geometry benchmark compare target in the clang-benchmark build tree.",
+      "configurePreset": "clang-benchmark",
+      "targets": [
+        "bench-compare-spherical-geometry"
+      ]
     },
     {
       "name": "build-clang-debug-format-check",
@@ -258,6 +298,51 @@
         {
           "type": "test",
           "name": "test-gcc-coverage"
+        }
+      ]
+    },
+    {
+      "name": "benchmark",
+      "displayName": "Benchmark Run (Local)",
+      "description": "Configure benchmark preset and run spherical-geometry benchmarks with JSON output.",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "clang-benchmark"
+        },
+        {
+          "type": "build",
+          "name": "build-clang-benchmark-bench-spherical-geometry"
+        }
+      ]
+    },
+    {
+      "name": "benchmark-baseline",
+      "displayName": "Benchmark Baseline (Local)",
+      "description": "Configure benchmark preset and record a local spherical-geometry benchmark baseline.",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "clang-benchmark"
+        },
+        {
+          "type": "build",
+          "name": "build-clang-benchmark-bench-baseline-spherical-geometry"
+        }
+      ]
+    },
+    {
+      "name": "benchmark-compare",
+      "displayName": "Benchmark Compare (Local)",
+      "description": "Configure benchmark preset, run spherical-geometry benchmarks, and compare against local baseline.",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "clang-benchmark"
+        },
+        {
+          "type": "build",
+          "name": "build-clang-benchmark-bench-compare-spherical-geometry"
         }
       ]
     },
