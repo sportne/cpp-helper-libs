@@ -106,6 +106,9 @@ cmake --workflow --preset coverage
 cmake --workflow --preset benchmark
 cmake --workflow --preset benchmark-baseline
 cmake --workflow --preset benchmark-compare
+cmake --workflow --preset benchmark-hotspots
+cmake --workflow --preset benchmark-perfstat
+cmake --workflow --preset benchmark-profile
 cmake --workflow --preset static-analysis
 cmake --workflow --preset format-check
 cmake --workflow --preset format
@@ -123,6 +126,9 @@ make coverage
 make bench
 make bench-baseline
 make bench-compare
+make bench-hotspots
+make bench-perfstat
+make bench-profile
 make static-analysis
 make format-check
 make format
@@ -177,6 +183,9 @@ Spherical-geometry benchmarks are available as a local workflow:
 cmake --workflow --preset benchmark
 cmake --workflow --preset benchmark-baseline
 cmake --workflow --preset benchmark-compare
+cmake --workflow --preset benchmark-hotspots
+cmake --workflow --preset benchmark-perfstat
+cmake --workflow --preset benchmark-profile
 ```
 
 Equivalent `make` aliases:
@@ -185,11 +194,17 @@ Equivalent `make` aliases:
 make bench
 make bench-baseline
 make bench-compare
+make bench-hotspots
+make bench-perfstat
+make bench-profile
 ```
 
 Outputs:
 - latest run JSON: `build/clang-benchmark/benchmarks/spherical_geometry/latest.json`
 - local baseline JSON: `docs/benchmarks/spherical_geometry-baseline.local.json`
+- hotspot summary: `build/clang-benchmark/benchmarks/spherical_geometry/analysis/hotspots-summary.md`
+- perf stat CSV: `build/clang-benchmark/benchmarks/spherical_geometry/analysis/perfstat/perfstat.csv`
+- perf profile report: `build/clang-benchmark/benchmarks/spherical_geometry/analysis/profile/perf-report.txt`
 
 `benchmark-compare` fails if any median `cpu_time` regresses by more than `10%`.
 

@@ -158,6 +158,30 @@
       ]
     },
     {
+      "name": "build-clang-benchmark-bench-hotspots-spherical-geometry",
+      "description": "Build only the spherical-geometry hotspot benchmark target in the clang-benchmark build tree.",
+      "configurePreset": "clang-benchmark",
+      "targets": [
+        "bench-hotspots-spherical-geometry"
+      ]
+    },
+    {
+      "name": "build-clang-benchmark-bench-perfstat-spherical-geometry",
+      "description": "Build only the spherical-geometry perf stat collection target in the clang-benchmark build tree.",
+      "configurePreset": "clang-benchmark",
+      "targets": [
+        "bench-perfstat-spherical-geometry"
+      ]
+    },
+    {
+      "name": "build-clang-benchmark-bench-profile-spherical-geometry",
+      "description": "Build only the spherical-geometry perf profile target in the clang-benchmark build tree.",
+      "configurePreset": "clang-benchmark",
+      "targets": [
+        "bench-profile-spherical-geometry"
+      ]
+    },
+    {
       "name": "build-clang-debug-format-check",
       "description": "Build only the format-check target in the clang-debug build tree.",
       "configurePreset": "clang-debug",
@@ -343,6 +367,51 @@
         {
           "type": "build",
           "name": "build-clang-benchmark-bench-compare-spherical-geometry"
+        }
+      ]
+    },
+    {
+      "name": "benchmark-hotspots",
+      "displayName": "Benchmark Hotspots (Local)",
+      "description": "Configure benchmark preset, run longer spherical-geometry benchmarks, and generate a hotspot summary report.",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "clang-benchmark"
+        },
+        {
+          "type": "build",
+          "name": "build-clang-benchmark-bench-hotspots-spherical-geometry"
+        }
+      ]
+    },
+    {
+      "name": "benchmark-perfstat",
+      "displayName": "Benchmark Perf Stat (Local)",
+      "description": "Configure benchmark preset and collect Linux perf stat counters per spherical-geometry benchmark.",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "clang-benchmark"
+        },
+        {
+          "type": "build",
+          "name": "build-clang-benchmark-bench-perfstat-spherical-geometry"
+        }
+      ]
+    },
+    {
+      "name": "benchmark-profile",
+      "displayName": "Benchmark Perf Profile (Local)",
+      "description": "Configure benchmark preset and sample spherical-geometry call stacks with perf.",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "clang-benchmark"
+        },
+        {
+          "type": "build",
+          "name": "build-clang-benchmark-bench-profile-spherical-geometry"
         }
       ]
     },

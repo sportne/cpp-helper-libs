@@ -2,78 +2,88 @@
 
 ## Purpose
 
-This repository includes a local benchmark workflow for `libs/spherical_geometry`.
-It is designed for:
+This repository includes local performance tooling for `libs/spherical_geometry`.
+It supports two complementary goals:
 
-- measuring runtime changes while developing
-- recording a baseline on your machine
-- comparing later runs against that baseline
+- guardrails: catch regressions before they merge
+- optimization guidance: identify hotspots and where to focus tuning effort
 
 This workflow is local-only and is not part of CI quality gates.
 
 ## Prerequisites
 
-- Initialize submodules:
+Initialize submodules:
 
 ```bash
 git submodule update --init --recursive
 ```
 
-This must include:
+Required submodule:
 - `third_party/googlebenchmark`
 
-## Run Benchmarks
+Optional Linux tools for deeper hotspot analysis:
+- `perf` (`linux-perf`)
 
-Run benchmarks and write JSON output to:
-`build/clang-benchmark/benchmarks/spherical_geometry/latest.json`
+## Quick Commands
+
+Baseline regression workflow:
 
 ```bash
 cmake --workflow --preset benchmark
-```
-
-Equivalent shortcut:
-
-```bash
-make bench
-```
-
-The runner uses:
-- repeated samples
-- aggregate-only reporting
-- median CPU time for comparisons
-- a runtime target tuned for roughly 20 seconds total on a typical developer machine
-
-## Record a Local Baseline
-
-Create or refresh the local baseline file:
-`docs/benchmarks/spherical_geometry-baseline.local.json`
-
-```bash
 cmake --workflow --preset benchmark-baseline
-```
-
-Equivalent shortcut:
-
-```bash
-make bench-baseline
-```
-
-The baseline file is intentionally machine-local and ignored by git.
-
-## Compare Against Baseline
-
-Run benchmarks and fail if any benchmark regresses by more than `10%`
-for median `cpu_time`:
-
-```bash
 cmake --workflow --preset benchmark-compare
 ```
 
-Equivalent shortcut:
+Hotspot-analysis workflow:
 
 ```bash
-make bench-compare
+cmake --workflow --preset benchmark-hotspots
+cmake --workflow --preset benchmark-perfstat
+cmake --workflow --preset benchmark-profile
 ```
 
-If the baseline file is missing, the compare step fails and tells you to run
-`benchmark-baseline` first.
+Equivalent `make` aliases:
+
+```bash
+make bench
+make bench-baseline
+make bench-compare
+make bench-hotspots
+make bench-perfstat
+make bench-profile
+```
+
+## Outputs
+
+Regression and baseline data:
+- latest run JSON: `build/clang-benchmark/benchmarks/spherical_geometry/latest.json`
+- local baseline JSON: `docs/benchmarks/spherical_geometry-baseline.local.json`
+
+Hotspot-analysis artifacts:
+- hotspot benchmark JSON: `build/clang-benchmark/benchmarks/spherical_geometry/analysis/hotspots.json`
+- hotspot summary: `build/clang-benchmark/benchmarks/spherical_geometry/analysis/hotspots-summary.md`
+- perf stat CSV: `build/clang-benchmark/benchmarks/spherical_geometry/analysis/perfstat/perfstat.csv`
+- perf stat raw logs: `build/clang-benchmark/benchmarks/spherical_geometry/analysis/perfstat/raw/`
+- perf profile data: `build/clang-benchmark/benchmarks/spherical_geometry/analysis/profile/perf.data`
+- perf profile report: `build/clang-benchmark/benchmarks/spherical_geometry/analysis/profile/perf-report.txt`
+
+The baseline file is intentionally machine-local and ignored by git.
+
+## How To Use the Data
+
+1. Start with `benchmark-hotspots`.
+2. Open `hotspots-summary.md` and pick the slowest benchmark entries first.
+3. Run `benchmark-perfstat` to classify bottlenecks:
+   - high `cache-misses`: memory-access locality issue
+   - high `branch-misses`: branch-predictability issue
+   - high `cycles` with lower `instructions`: latency/memory pressure
+   - if hardware counters are unavailable (common in WSL/VMs), the runner automatically falls back to software counters (`cpu-clock`, `task-clock`, `context-switches`, `page-faults`)
+4. Run `benchmark-profile` to identify concrete functions in hot stacks.
+5. Make one focused optimization change and rerun the same sequence.
+
+## Notes
+
+- Benchmarks use size sweeps (`small`, `medium`, `large`) so scaling trends are visible.
+- `benchmark-compare` fails if any median `cpu_time` regresses by more than `10%`.
+- If `perf` is unavailable or blocked by permissions, perf-based targets fail with actionable errors.
+- `benchmark-perfstat` first requests hardware events (`cycles,instructions,cache-misses,branch-misses`) and automatically retries each benchmark with software events if needed.

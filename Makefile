@@ -1,4 +1,4 @@
-.PHONY: help debug release asan coverage bench bench-baseline bench-compare static-analysis format format-check cpd ci \
+.PHONY: help debug release asan coverage bench bench-baseline bench-compare bench-hotspots bench-perfstat bench-profile static-analysis format format-check cpd ci \
         configure build test clean clean-debug clean-release clean-asan clean-coverage clean-static-analysis clean-all clean-fast distclean
 
 help:
@@ -10,6 +10,9 @@ help:
 	@echo "  make bench            - Configure and run spherical-geometry benchmarks (local)"
 	@echo "  make bench-baseline   - Record local spherical-geometry benchmark baseline"
 	@echo "  make bench-compare    - Run + compare spherical-geometry benchmarks vs local baseline"
+	@echo "  make bench-hotspots   - Generate hotspot summary data from longer benchmark runs"
+	@echo "  make bench-perfstat   - Collect Linux perf hardware-counter data per benchmark"
+	@echo "  make bench-profile    - Capture Linux perf call-stack profile for hotspot analysis"
 	@echo "  make format-check     - Run formatting check"
 	@echo "  make format           - Apply formatting"
 	@echo "  make cpd              - Run PMD CPD duplicate-code scan (report-only by default)"
@@ -40,6 +43,15 @@ bench-baseline:
 
 bench-compare:
 	cmake --workflow --preset benchmark-compare
+
+bench-hotspots:
+	cmake --workflow --preset benchmark-hotspots
+
+bench-perfstat:
+	cmake --workflow --preset benchmark-perfstat
+
+bench-profile:
+	cmake --workflow --preset benchmark-profile
 
 static-analysis:
 	cmake --workflow --preset static-analysis

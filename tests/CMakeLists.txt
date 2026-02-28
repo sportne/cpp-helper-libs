@@ -44,6 +44,8 @@ gtest_discover_tests(cpphl_smoke_tests)
 gtest_discover_tests(cpphl_smoke_shared_tests)
 
 set(cpphl_benchmark_compare_script "${CMAKE_SOURCE_DIR}/cmake/CompareBenchmarks.cmake")
+set(cpphl_benchmark_hotspot_summary_script
+    "${CMAKE_SOURCE_DIR}/cmake/SummarizeBenchmarkHotspots.cmake")
 set(cpphl_benchmark_fixture_dir "${CMAKE_SOURCE_DIR}/tests/data/benchmarks")
 
 add_test(
@@ -83,3 +85,14 @@ add_test(
           -P "${cpphl_benchmark_compare_script}"
 )
 set_tests_properties(benchmark-compare-missing-baseline PROPERTIES WILL_FAIL TRUE)
+
+add_test(
+  NAME benchmark-hotspots-summary
+  COMMAND "${CMAKE_COMMAND}"
+          -DBENCHMARK_JSON_PATH=${cpphl_benchmark_fixture_dir}/baseline.json
+          -DOUTPUT_SUMMARY_PATH=${CMAKE_BINARY_DIR}/benchmarks/hotspots-summary-test.md
+          -DMETRIC=cpu_time
+          -DAGGREGATE=median
+          -DTOP_N=2
+          -P "${cpphl_benchmark_hotspot_summary_script}"
+)

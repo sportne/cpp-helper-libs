@@ -114,6 +114,9 @@ cmake --workflow --preset coverage
 cmake --workflow --preset benchmark
 cmake --workflow --preset benchmark-baseline
 cmake --workflow --preset benchmark-compare
+cmake --workflow --preset benchmark-hotspots
+cmake --workflow --preset benchmark-perfstat
+cmake --workflow --preset benchmark-profile
 cmake --workflow --preset static-analysis
 cmake --workflow --preset format-check
 cmake --workflow --preset format
@@ -130,6 +133,9 @@ make coverage
 make bench
 make bench-baseline
 make bench-compare
+make bench-hotspots
+make bench-perfstat
+make bench-profile
 make static-analysis
 make format-check
 make format
@@ -233,17 +239,41 @@ Compare against local baseline (fails on >10% median `cpu_time` regressions):
 cmake --workflow --preset benchmark-compare
 ```
 
+Generate hotspot-focused summary data:
+
+```bash
+cmake --workflow --preset benchmark-hotspots
+```
+
+Collect hardware counters per benchmark (`perf stat`, Linux):
+
+```bash
+cmake --workflow --preset benchmark-perfstat
+```
+
+Capture call-stack hotspot profile (`perf record/report`, Linux):
+
+```bash
+cmake --workflow --preset benchmark-profile
+```
+
 Equivalent shortcuts:
 
 ```bash
 make bench
 make bench-baseline
 make bench-compare
+make bench-hotspots
+make bench-perfstat
+make bench-profile
 ```
 
 Files:
 - latest run JSON: `build/clang-benchmark/benchmarks/spherical_geometry/latest.json`
 - local baseline JSON: `docs/benchmarks/spherical_geometry-baseline.local.json`
+- hotspot summary: `build/clang-benchmark/benchmarks/spherical_geometry/analysis/hotspots-summary.md`
+- perf stat CSV: `build/clang-benchmark/benchmarks/spherical_geometry/analysis/perfstat/perfstat.csv`
+- perf profile report: `build/clang-benchmark/benchmarks/spherical_geometry/analysis/profile/perf-report.txt`
 
 ## CI Parity Matrix
 
