@@ -88,3 +88,8 @@ if(CPPHL_BUILD_TESTS)
   # Module-local unit tests.
   add_subdirectory(tests)
 endif()
+
+if(CPPHL_BUILD_BENCHMARKS)
+  # Module-local benchmarks.
+  add_subdirectory(benchmarks)
+endif()

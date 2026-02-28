@@ -10,6 +10,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 # Build toggles that can be overridden from presets or command line.
 option(CPPHL_BUILD_TESTS "Build test targets" ON)
+option(CPPHL_BUILD_BENCHMARKS "Build benchmark targets" OFF)
 option(CPPHL_ENABLE_WARNINGS "Enable compiler warnings" ON)
 option(CPPHL_WARNINGS_AS_ERRORS "Treat compiler warnings as errors on first-party targets" ON)
 option(CPPHL_ENABLE_SANITIZERS "Enable sanitizer flags for Clang in Debug-like builds" OFF)
@@ -46,6 +47,24 @@ if(CPPHL_BUILD_TESTS)
   # Bring GoogleTest into the build and register the CTest framework.
   add_subdirectory(third_party/googletest EXCLUDE_FROM_ALL)
   enable_testing()
+endif()
+
+if(CPPHL_BUILD_BENCHMARKS)
+  # Benchmarks depend on Google Benchmark, vendored as a git submodule.
+  if(NOT EXISTS "${CMAKE_SOURCE_DIR}/third_party/googlebenchmark/CMakeLists.txt")
+    message(FATAL_ERROR
+      "Google Benchmark submodule not found at third_party/googlebenchmark. "
+      "Run: git submodule update --init --recursive")
+  endif()
+
+  # Keep third-party benchmark internals out of first-party checks and installs.
+  set(BENCHMARK_ENABLE_TESTING OFF CACHE BOOL
+      "Disable Google Benchmark's own tests in this workspace." FORCE)
+  set(BENCHMARK_ENABLE_INSTALL OFF CACHE BOOL
+      "Disable Google Benchmark install targets in this workspace." FORCE)
+  set(BENCHMARK_DOWNLOAD_DEPENDENCIES OFF CACHE BOOL
+      "Disable Google Benchmark dependency downloads in this workspace." FORCE)
+  add_subdirectory(third_party/googlebenchmark EXCLUDE_FROM_ALL)
 endif()
 
 # Build all first-party libraries/modules.

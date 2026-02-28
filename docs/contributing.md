@@ -66,6 +66,28 @@ ctest --preset test-gcc-coverage
 gcovr --root . --filter '^libs/' --exclude '^third_party/' --exclude '.*/tests/.*' --fail-under-line 80 --txt --xml-pretty --xml coverage.xml
 ```
 
+Optional local performance check (`spherical_geometry`):
+
+```bash
+cmake --workflow --preset benchmark
+cmake --workflow --preset benchmark-baseline
+cmake --workflow --preset benchmark-compare
+cmake --workflow --preset benchmark-hotspots
+cmake --workflow --preset benchmark-perfstat
+cmake --workflow --preset benchmark-profile
+```
+
+Equivalent shortcuts:
+
+```bash
+make bench
+make bench-baseline
+make bench-compare
+make bench-hotspots
+make bench-perfstat
+make bench-profile
+```
+
 Single command CI parity:
 
 ```bash

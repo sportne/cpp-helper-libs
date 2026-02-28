@@ -15,7 +15,7 @@ Each module is built as both:
 
 ## Quick Start
 
-1. Initialize submodules (required for GoogleTest):
+1. Initialize submodules (required for GoogleTest and Google Benchmark):
 
 ```bash
 git submodule update --init --recursive
@@ -77,7 +77,7 @@ const auto equator_quarter = cpp_helper_libs::spherical_geometry::MinorArc::from
 │   └── quantities/
 │   └── spherical_geometry/
 ├── tests/                 # Cross-module smoke/integration tests
-└── third_party/           # Vendored dependencies (GoogleTest submodule)
+└── third_party/           # Vendored dependencies (GoogleTest/Google Benchmark submodules)
 ```
 
 ## Toolchain Prerequisites
@@ -103,6 +103,12 @@ cmake --workflow --preset debug
 cmake --workflow --preset release
 cmake --workflow --preset asan
 cmake --workflow --preset coverage
+cmake --workflow --preset benchmark
+cmake --workflow --preset benchmark-baseline
+cmake --workflow --preset benchmark-compare
+cmake --workflow --preset benchmark-hotspots
+cmake --workflow --preset benchmark-perfstat
+cmake --workflow --preset benchmark-profile
 cmake --workflow --preset static-analysis
 cmake --workflow --preset format-check
 cmake --workflow --preset format
@@ -117,6 +123,12 @@ make debug
 make release
 make asan
 make coverage
+make bench
+make bench-baseline
+make bench-compare
+make bench-hotspots
+make bench-perfstat
+make bench-profile
 make static-analysis
 make format-check
 make format
@@ -163,6 +175,39 @@ Single command parity with CI:
 cmake --workflow --preset ci-local
 ```
 
+## Local Performance Evaluation
+
+Spherical-geometry benchmarks are available as a local workflow:
+
+```bash
+cmake --workflow --preset benchmark
+cmake --workflow --preset benchmark-baseline
+cmake --workflow --preset benchmark-compare
+cmake --workflow --preset benchmark-hotspots
+cmake --workflow --preset benchmark-perfstat
+cmake --workflow --preset benchmark-profile
+```
+
+Equivalent `make` aliases:
+
+```bash
+make bench
+make bench-baseline
+make bench-compare
+make bench-hotspots
+make bench-perfstat
+make bench-profile
+```
+
+Outputs:
+- latest run JSON: `build/clang-benchmark/benchmarks/spherical_geometry/latest.json`
+- local baseline JSON: `docs/benchmarks/spherical_geometry-baseline.local.json`
+- hotspot summary: `build/clang-benchmark/benchmarks/spherical_geometry/analysis/hotspots-summary.md`
+- perf stat CSV: `build/clang-benchmark/benchmarks/spherical_geometry/analysis/perfstat/perfstat.csv`
+- perf profile report: `build/clang-benchmark/benchmarks/spherical_geometry/analysis/profile/perf-report.txt`
+
+`benchmark-compare` fails if any median `cpu_time` regresses by more than `10%`.
+
 ## Build Policy
 
 - Language level: C++20
@@ -177,6 +222,7 @@ cmake --workflow --preset ci-local
 - `docs/architecture.md`
 - `docs/contributing.md`
 - `docs/linear-algebra.md`
+- `docs/performance-benchmarks.md`
 - `docs/quantities.md`
 - `docs/spherical-geometry.md`
 - `docs/style-guide.md`

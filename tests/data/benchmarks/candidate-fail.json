@@ -1,0 +1,26 @@
+{
+  "context": {
+    "date": "2026-02-28T00:02:00Z",
+    "library_build_type": "release"
+  },
+  "benchmarks": [
+    {
+      "name": "BM_CoordinateToRadial",
+      "run_name": "BM_CoordinateToRadial",
+      "run_type": "aggregate",
+      "aggregate_name": "median",
+      "real_time": 111.0,
+      "cpu_time": 111.0,
+      "time_unit": "ns"
+    },
+    {
+      "name": "BM_MinorArcIntersections",
+      "run_name": "BM_MinorArcIntersections",
+      "run_type": "aggregate",
+      "aggregate_name": "median",
+      "real_time": 250.0,
+      "cpu_time": 250.0,
+      "time_unit": "ns"
+    }
+  ]
+}
