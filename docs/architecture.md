@@ -52,3 +52,6 @@ libs/<module>/
 - `spherical_geometry`: spherical coordinate/ray primitives, curve types (`MinorArc`, `MajorArc`,
   `SmallArc`, `ZeroLengthCurve`), curve intersections, and spherical shapes (`SphericalPolygon`,
   `SphericalCircle`, `SphericalEllipse`).
+- `path_finding`: geometry-agnostic A* search interfaces and solver implementation.
+- `dubins_path_finding`: spherical Dubins-constrained planner layered on `path_finding` and
+  `spherical_geometry`.

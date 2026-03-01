@@ -8,6 +8,8 @@ The repository currently contains first-party modules:
 - `libs/linear_algebra`: immutable vector and matrix helpers (`Vector3`, `UnitVector3`, `Matrix3`,
   `Matrix`)
 - `libs/spherical_geometry`: coordinate, ray, curve, and shape utilities on the unit sphere
+- `libs/path_finding`: geometry-agnostic A* search infrastructure
+- `libs/dubins_path_finding`: spherical Dubins-constrained path planner built on `path_finding`
 
 Each module is built as both:
 - static library target: `cpphl_<module>` (alias: `cpphl::<module>`)
@@ -38,7 +40,9 @@ make debug
 ```cpp
 #include "cpp_helper_libs/linear_algebra/linear_algebra.hpp"
 #include "cpp_helper_libs/math/arithmetic.hpp"
+#include "cpp_helper_libs/path_finding/path_finding.hpp"
 #include "cpp_helper_libs/quantities/quantities.hpp"
+#include "cpp_helper_libs/dubins_path_finding/dubins_path_finding.hpp"
 #include "cpp_helper_libs/spherical_geometry/spherical_geometry.hpp"
 
 const int sum = cpp_helper_libs::math::add(2, 3); // 5
@@ -76,6 +80,8 @@ const auto equator_quarter = cpp_helper_libs::spherical_geometry::MinorArc::from
 │   └── linear_algebra/
 │   └── quantities/
 │   └── spherical_geometry/
+│   └── path_finding/
+│   └── dubins_path_finding/
 ├── tests/                 # Cross-module smoke/integration tests
 └── third_party/           # Vendored dependencies (GoogleTest/Google Benchmark submodules)
 ```
@@ -223,8 +229,10 @@ Outputs:
 - `docs/contributing.md`
 - `docs/linear-algebra.md`
 - `docs/performance-benchmarks.md`
+- `docs/path-finding.md`
 - `docs/quantities.md`
 - `docs/spherical-geometry.md`
+- `docs/dubins-path-finding.md`
 - `docs/style-guide.md`
 
 ## Adding a Module
