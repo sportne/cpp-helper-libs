@@ -45,8 +45,8 @@ struct SolverState final {
   std::uint64_t insertion_order = 1U;
 };
 
-std::optional<std::vector<NodeId>> reconstruct_node_path(
-    const std::unordered_map<NodeId, ParentRecord> &parents, const NodeId goal) {
+std::optional<std::vector<NodeId>>
+reconstruct_node_path(const std::unordered_map<NodeId, ParentRecord> &parents, const NodeId goal) {
   std::vector<NodeId> reversed_path;
   reversed_path.push_back(goal);
 
@@ -64,8 +64,9 @@ std::optional<std::vector<NodeId>> reconstruct_node_path(
   return reversed_path;
 }
 
-std::optional<std::vector<std::uint64_t>> reconstruct_payload_path(
-    const std::unordered_map<NodeId, ParentRecord> &parents, const std::vector<NodeId> &node_path) {
+std::optional<std::vector<std::uint64_t>>
+reconstruct_payload_path(const std::unordered_map<NodeId, ParentRecord> &parents,
+                         const std::vector<NodeId> &node_path) {
   if (node_path.empty()) {
     return std::vector<std::uint64_t>{};
   }
@@ -89,7 +90,9 @@ bool is_edge_cost_valid(const double edge_cost) noexcept {
   return std::isfinite(edge_cost) && edge_cost >= 0.0;
 }
 
-bool is_heuristic_valid(const double heuristic_value) noexcept { return std::isfinite(heuristic_value); }
+bool is_heuristic_valid(const double heuristic_value) noexcept {
+  return std::isfinite(heuristic_value);
+}
 
 bool initialize_search(const AStarProblem &problem, const NodeId start, SolverState *state) {
   const double start_heuristic = problem.heuristic(start);
@@ -98,10 +101,8 @@ bool initialize_search(const AStarProblem &problem, const NodeId start, SolverSt
   }
 
   state->best_g_cost[start] = 0.0;
-  state->open_set.push(OpenEntry{.node = start,
-                                 .g_cost = 0.0,
-                                 .f_cost = start_heuristic,
-                                 .insertion_order = 0U});
+  state->open_set.push(
+      OpenEntry{.node = start, .g_cost = 0.0, .f_cost = start_heuristic, .insertion_order = 0U});
   return true;
 }
 
@@ -126,9 +127,10 @@ std::optional<OpenEntry> pop_next_valid_entry(SolverState *state) {
 }
 
 std::optional<AStarResult>
-build_found_result(const std::unordered_map<NodeId, ParentRecord> &parents, const OpenEntry &goal_entry,
-                   const std::size_t expanded_nodes) {
-  const std::optional<std::vector<NodeId>> node_path = reconstruct_node_path(parents, goal_entry.node);
+build_found_result(const std::unordered_map<NodeId, ParentRecord> &parents,
+                   const OpenEntry &goal_entry, const std::size_t expanded_nodes) {
+  const std::optional<std::vector<NodeId>> node_path =
+      reconstruct_node_path(parents, goal_entry.node);
   if (!node_path.has_value()) {
     return std::nullopt;
   }

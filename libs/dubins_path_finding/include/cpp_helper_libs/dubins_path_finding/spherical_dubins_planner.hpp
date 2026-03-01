@@ -51,7 +51,8 @@ struct PlannerConfig final {
   /// Number of heading bins over [0, 2*pi).
   std::size_t heading_bin_count = 72U;
   /// Forward primitive length for straight geodesic motion.
-  cpp_helper_libs::quantities::Angle forward_step = cpp_helper_libs::quantities::Angle::degrees(2.0);
+  cpp_helper_libs::quantities::Angle forward_step =
+      cpp_helper_libs::quantities::Angle::degrees(2.0);
   /// Sweep angle for each turning primitive.
   cpp_helper_libs::quantities::Angle turn_step = cpp_helper_libs::quantities::Angle::degrees(5.0);
   /// Maximum central-angle error allowed for goal position satisfaction.
@@ -77,7 +78,8 @@ struct Request final {
   /// Minimum-turn-radius vehicle parameters.
   DubinsVehicleModel vehicle;
   /// Physical sphere radius used to convert angular length into surface length.
-  cpp_helper_libs::quantities::Length sphere_radius = cpp_helper_libs::quantities::Length::meters(1.0);
+  cpp_helper_libs::quantities::Length sphere_radius =
+      cpp_helper_libs::quantities::Length::meters(1.0);
   /// Search discretization and termination settings.
   PlannerConfig config{};
 };
