@@ -12,6 +12,8 @@ target_link_libraries(cpphl_smoke_tests
     cpphl::quantities
     cpphl::linear_algebra
     cpphl::spherical_geometry
+    cpphl::path_finding
+    cpphl::dubins_path_finding
     GTest::gtest_main
 )
 
@@ -32,6 +34,8 @@ target_link_libraries(cpphl_smoke_shared_tests
     cpphl::quantities_shared
     cpphl::linear_algebra_shared
     cpphl::spherical_geometry_shared
+    cpphl::path_finding_shared
+    cpphl::dubins_path_finding_shared
     GTest::gtest_main
 )
 
